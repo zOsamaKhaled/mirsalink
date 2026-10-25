@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -39,10 +40,25 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'locale' => app()->getLocale(),
+            'dir' => SetLocale::direction(),
+            'supportedLocales' => SetLocale::SUPPORTED,
+            'translations' => Inertia::once(fn (): array => (array) trans('app'))
+                ->as($this->translationsKey()),
             'auth' => [
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * Which strings, in which language, as of which edit of the file, so a
+     * browser keeps them between visits until the file changes.
+     */
+    private function translationsKey(): string
+    {
+        $locale = app()->getLocale();
+
+        return "translations-{$locale}-".(int) @filemtime(lang_path("{$locale}/app.php"));
     }
 }

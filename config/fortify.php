@@ -161,7 +161,8 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // No public sign-up: a supervisor adds the team, and the first
+        // supervisor is created with `php artisan mirsalink:supervisor`.
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

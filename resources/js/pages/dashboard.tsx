@@ -1,36 +1,148 @@
-import { Head } from '@inertiajs/react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { Head, setLayoutProps, usePage } from '@inertiajs/react';
+import { Check, Clock3, Inbox, CircleCheckBig } from 'lucide-react';
+import type { ReactNode } from 'react';
+
+import { HandoverMark } from '@/components/inbox/handover-mark';
+import { Badge } from '@/components/ui/badge';
+import { useTranslations } from '@/hooks/use-translations';
+import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 
+/*
+ * Home before there is anything to count: the figures the inbox will fill
+ * in, shown empty rather than as made-up zeros, and the setup steps in the
+ * order the platform is being built. Each step turns into a link as its
+ * phase lands.
+ */
+
+const SETUP_STEPS = [
+    { key: 'account', done: true },
+    { key: 'team', done: false },
+    { key: 'routing', done: false },
+    { key: 'contacts', done: false },
+    { key: 'whatsapp', done: false },
+] as const;
+
 export default function Dashboard() {
+    const { auth } = usePage().props;
+    const { t } = useTranslations();
+    const firstName = auth.user.name.split(' ')[0];
+
+    setLayoutProps({
+        breadcrumbs: [{ title: t('dashboard.title'), href: dashboard() }],
+    });
+
     return (
         <>
-            <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+            <Head title={t('dashboard.title')} />
+
+            <div className="flex flex-col gap-10 px-4 py-8 sm:px-6">
+                <header className="flex flex-col gap-2">
+                    <h1 className="text-display font-extrabold">
+                        {t('dashboard.greeting', { name: firstName })}
+                    </h1>
+                    <p className="max-w-[60ch] text-body text-muted-foreground">
+                        {t('dashboard.subtitle')}
+                    </p>
+                </header>
+
+                <section className="flex flex-col gap-3">
+                    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                        <StatTile
+                            icon={<Inbox className="size-4" />}
+                            label={t('dashboard.stats.open')}
+                        />
+                        <StatTile
+                            icon={<HandoverMark className="size-4" />}
+                            label={t('dashboard.stats.waiting')}
+                        />
+                        <StatTile
+                            icon={<Clock3 className="size-4" />}
+                            label={t('dashboard.stats.first_response')}
+                        />
+                        <StatTile
+                            icon={<CircleCheckBig className="size-4" />}
+                            label={t('dashboard.stats.closed_today')}
+                        />
                     </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                    <p className="text-caption text-muted-foreground">
+                        {t('dashboard.stats.empty')}
+                    </p>
+                </section>
+
+                <section className="flex max-w-3xl flex-col gap-5 rounded-2xl border bg-card p-5 sm:p-6">
+                    <div className="flex flex-col gap-1">
+                        <h2 className="text-heading font-bold">
+                            {t('dashboard.setup.title')}
+                        </h2>
+                        <p className="text-body-sm text-muted-foreground">
+                            {t('dashboard.setup.description')}
+                        </p>
                     </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                </div>
+
+                    <ol className="flex flex-col">
+                        {SETUP_STEPS.map((step, index) => (
+                            <li
+                                key={step.key}
+                                className="flex items-start gap-4 border-t py-4 first:border-t-0 first:pt-0 last:pb-0"
+                            >
+                                <span
+                                    className={cn(
+                                        'grid size-8 shrink-0 place-items-center rounded-full text-body-sm font-bold tabular',
+                                        step.done
+                                            ? 'bg-success-soft text-success'
+                                            : 'bg-muted text-muted-foreground',
+                                    )}
+                                    aria-hidden
+                                >
+                                    {step.done ? (
+                                        <Check className="size-4" />
+                                    ) : (
+                                        index + 1
+                                    )}
+                                </span>
+                                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                                    <h3 className="text-body font-bold">
+                                        {t(
+                                            `dashboard.setup.steps.${step.key}.title`,
+                                        )}
+                                    </h3>
+                                    <p className="text-body-sm text-muted-foreground">
+                                        {t(
+                                            `dashboard.setup.steps.${step.key}.body`,
+                                        )}
+                                    </p>
+                                </div>
+                                <Badge
+                                    variant={step.done ? 'success' : 'neutral'}
+                                    className="rounded-full"
+                                >
+                                    {step.done
+                                        ? t('dashboard.setup.done')
+                                        : t('common.soon')}
+                                </Badge>
+                            </li>
+                        ))}
+                    </ol>
+                </section>
             </div>
         </>
     );
 }
 
-Dashboard.layout = {
-    breadcrumbs: [
-        {
-            title: 'Dashboard',
-            href: dashboard(),
-        },
-    ],
-};
+function StatTile({ icon, label }: { icon: ReactNode; label: string }) {
+    return (
+        <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+            <span className="flex items-center gap-2 text-body-sm text-muted-foreground">
+                {icon}
+                {label}
+            </span>
+            <span
+                className="text-display leading-none font-extrabold text-muted-foreground/50"
+                aria-hidden
+            >
+                —
+            </span>
+        </div>
+    );
+}

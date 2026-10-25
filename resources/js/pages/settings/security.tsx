@@ -1,16 +1,19 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { useRef } from 'react';
+
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/security';
 import type { Props as ManagePasskeysProps } from '@/components/manage-passkeys';
 import ManagePasskeys from '@/components/manage-passkeys';
 import type { Props as ManageTwoFactorProps } from '@/components/manage-two-factor';
 import ManageTwoFactor from '@/components/manage-two-factor';
+import PasswordInput from '@/components/password-input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { useTranslations } from '@/hooks/use-translations';
+import { edit as editProfile } from '@/routes/profile';
+import { edit } from '@/routes/security';
 
 // oxfmt-ignore
 type Props = {
@@ -21,18 +24,24 @@ type Props = {
 export default function Security(props: Props) {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
+    const { t } = useTranslations();
+
+    setLayoutProps({
+        breadcrumbs: [
+            { title: t('settings.title'), href: editProfile() },
+            { title: t('settings.nav.security'), href: edit() },
+        ],
+    });
 
     return (
         <>
-            <Head title="Security settings" />
+            <Head title={t('settings.nav.security')} />
 
-            <h1 className="sr-only">Security settings</h1>
-
-            <div className="space-y-6">
+            <div className="flex flex-col gap-6">
                 <Heading
                     variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
+                    title={t('settings.security.heading')}
+                    description={t('settings.security.description')}
                 />
 
                 <Form
@@ -55,57 +64,50 @@ export default function Security(props: Props) {
                             currentPasswordInput.current?.focus();
                         }
                     }}
-                    className="space-y-6"
+                    className="flex flex-col gap-5"
                 >
-                    {({ errors, processing }) => (
+                    {({ errors, processing, recentlySuccessful }) => (
                         <>
                             <div className="grid gap-2">
                                 <Label htmlFor="current_password">
-                                    Current password
+                                    {t('settings.security.current')}
                                 </Label>
-
                                 <PasswordInput
                                     id="current_password"
                                     ref={currentPasswordInput}
                                     name="current_password"
-                                    className="mt-1 block w-full"
+                                    className="h-10"
                                     autoComplete="current-password"
-                                    placeholder="Current password"
                                 />
-
                                 <InputError message={errors.current_password} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
-
+                                <Label htmlFor="password">
+                                    {t('settings.security.new')}
+                                </Label>
                                 <PasswordInput
                                     id="password"
                                     ref={passwordInput}
                                     name="password"
-                                    className="mt-1 block w-full"
+                                    className="h-10"
                                     autoComplete="new-password"
-                                    placeholder="New password"
                                     passwordrules={props.passwordRules}
                                 />
-
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="grid gap-2">
                                 <Label htmlFor="password_confirmation">
-                                    Confirm password
+                                    {t('settings.security.confirm')}
                                 </Label>
-
                                 <PasswordInput
                                     id="password_confirmation"
                                     name="password_confirmation"
-                                    className="mt-1 block w-full"
+                                    className="h-10"
                                     autoComplete="new-password"
-                                    placeholder="Confirm password"
                                     passwordrules={props.passwordRules}
                                 />
-
                                 <InputError
                                     message={errors.password_confirmation}
                                 />
@@ -116,8 +118,13 @@ export default function Security(props: Props) {
                                     disabled={processing}
                                     data-test="update-password-button"
                                 >
-                                    Save
+                                    {t('common.save')}
                                 </Button>
+                                {recentlySuccessful && (
+                                    <p className="text-body-sm text-success">
+                                        {t('common.saved')}
+                                    </p>
+                                )}
                             </div>
                         </>
                     )}
@@ -137,12 +144,3 @@ export default function Security(props: Props) {
         </>
     );
 }
-
-Security.layout = {
-    breadcrumbs: [
-        {
-            title: 'Security settings',
-            href: edit(),
-        },
-    ],
-};

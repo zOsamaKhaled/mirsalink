@@ -4,6 +4,7 @@ import { destroy } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegi
 import Heading from '@/components/heading';
 import PasskeyItem from '@/components/passkey-item';
 import PasskeyRegistration from '@/components/passkey-register';
+import { useTranslations } from '@/hooks/use-translations';
 import type { Passkey } from '@/types/auth';
 
 export type Props = {
@@ -12,20 +13,23 @@ export type Props = {
 };
 
 const EmptyState = () => {
+    const { t } = useTranslations();
+
     return (
         <div className="p-8 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
                 <KeyRound className="h-7 w-7 text-muted-foreground" />
             </div>
-            <p className="font-medium">No passkeys yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-                Add a passkey to sign in without a password
+            <p className="font-bold">{t('settings.passkeys.empty_title')}</p>
+            <p className="mt-1 text-body-sm text-muted-foreground">
+                {t('settings.passkeys.empty_body')}
             </p>
         </div>
     );
 };
 
 export default function ManagePasskeys(props: Props) {
+    const { t } = useTranslations();
     const passkeys = props.passkeys ?? [];
 
     const handleDelete = (id: number, onError: () => void) => {
@@ -44,14 +48,14 @@ export default function ManagePasskeys(props: Props) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col items-start gap-6">
             <Heading
                 variant="small"
-                title="Passkeys"
-                description="Manage your passkeys for passwordless sign-in"
+                title={t('settings.passkeys.heading')}
+                description={t('settings.passkeys.description')}
             />
 
-            <div className="overflow-hidden rounded-lg border border-border">
+            <div className="w-full overflow-hidden rounded-xl border border-border bg-card">
                 {passkeys.length > 0 ? (
                     passkeys.map((passkey) => (
                         <PasskeyItem

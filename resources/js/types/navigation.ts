@@ -11,4 +11,6 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    /** Not built yet: shown greyed with a "Soon" label instead of a link. */
+    soon?: boolean;
 };

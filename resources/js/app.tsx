@@ -6,13 +6,14 @@ import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Mirsalink';
+// The tab title carries the name in the page's language.
+const appName = () =>
+    document.documentElement.lang === 'ar' ? 'ميرسالينك' : 'Mirsalink';
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => (title ? `${title} · ${appName()}` : appName()),
     layout: (name) => {
         switch (true) {
-            case name === 'welcome':
             case name.startsWith('design-system'):
                 return null;
             case name.startsWith('auth/'):

@@ -14,7 +14,9 @@ export function useInitials(): GetInitialsFn {
             return '';
         }
 
-        if (names.length === 1) {
+        // Arabic has no capitals and its letters join, so two initials read
+        // as a word; one letter is what an Arabic name's avatar shows.
+        if (names.length === 1 || /\p{Script=Arabic}/u.test(names[0])) {
             return getInitial(names[0]).toUpperCase();
         }
 

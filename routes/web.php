@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+Route::redirect('/', '/dashboard')->name('home');
 
 if (app()->environment('local')) {
     Route::inertia('design-system', 'design-system')->name('design-system');
