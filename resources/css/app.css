@@ -1,0 +1,372 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Mirsalink design system.
+ *
+ * Navy is the platform: actions, navigation, what the team sends.
+ * Rose is the handover: the moment a conversation needs a person, what is
+ * new for you, what is yours now. It is kept scarce so it always means that.
+ * Everything else is a cool neutral leaning toward the navy.
+ *
+ * Every colour is a token below, defined for light on :root and again for
+ * dark on .dark; components use the Tailwind names (bg-primary,
+ * text-handover-ink, bg-tag-blue …), never a literal colour.
+ * The reference page is /design-system; the rules are in docs/design-system.md.
+ */
+
+@theme {
+    --font-sans:
+        'Almarai', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Almarai', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --font-brand-latin: 'Archivo', 'Almarai', sans-serif;
+    --font-brand-arabic: 'Lalezar', 'Almarai', sans-serif;
+
+    /*
+     * Almarai comes in 300, 400, 700 and 800 only: use font-light,
+     * font-normal, font-bold and font-extrabold. font-medium falls back to
+     * 400 and font-semibold to 700.
+     */
+
+    /* Type scale. Arabic sits taller than Latin, so line heights stay generous. */
+    --text-caption: 0.75rem;
+    --text-caption--line-height: 1.5;
+    --text-body-sm: 0.8125rem;
+    --text-body-sm--line-height: 1.55;
+    --text-body: 0.9375rem;
+    --text-body--line-height: 1.65;
+    --text-title: 1.125rem;
+    --text-title--line-height: 1.45;
+    --text-heading: 1.375rem;
+    --text-heading--line-height: 1.35;
+    --text-display: 1.875rem;
+    --text-display--line-height: 1.25;
+    --text-hero: 2.5rem;
+    --text-hero--line-height: 1.15;
+
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 10px);
+
+    --shadow-raised:
+        0 1px 2px rgb(14 27 66 / 0.06), 0 4px 12px rgb(14 27 66 / 0.06);
+    --shadow-overlay:
+        0 4px 12px rgb(14 27 66 / 0.08), 0 16px 40px rgb(14 27 66 / 0.14);
+
+    --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --animate-handover: handover 1.4s var(--ease-out-soft) infinite;
+
+    @keyframes handover {
+        0%,
+        100% {
+            transform: translate(0, 0);
+        }
+        50% {
+            transform: translate(-3px, 2px);
+        }
+    }
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-on-destructive: var(--on-destructive);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-sunken: var(--sunken);
+
+    --color-brand-navy: var(--brand-navy);
+    --color-brand-rose: var(--brand-rose);
+    --color-logo-ink: var(--logo-ink);
+
+    --color-handover: var(--handover);
+    --color-handover-foreground: var(--handover-foreground);
+    --color-handover-ink: var(--handover-ink);
+    --color-handover-soft: var(--handover-soft);
+
+    --color-success: var(--success);
+    --color-success-soft: var(--success-soft);
+    --color-warning: var(--warning);
+    --color-warning-soft: var(--warning-soft);
+    --color-info: var(--info);
+    --color-info-soft: var(--info-soft);
+    --color-danger: var(--destructive);
+    --color-danger-soft: var(--danger-soft);
+
+    --color-bubble-in: var(--bubble-in);
+    --color-bubble-in-foreground: var(--bubble-in-foreground);
+    --color-bubble-out: var(--bubble-out);
+    --color-bubble-out-foreground: var(--bubble-out-foreground);
+    --color-bubble-bot: var(--bubble-bot);
+    --color-bubble-bot-foreground: var(--bubble-bot-foreground);
+    --color-bubble-note: var(--bubble-note);
+    --color-bubble-note-foreground: var(--bubble-note-foreground);
+    --color-bubble-note-border: var(--bubble-note-border);
+
+    --color-tag-blue: var(--tag-blue);
+    --color-tag-blue-foreground: var(--tag-blue-foreground);
+    --color-tag-violet: var(--tag-violet);
+    --color-tag-violet-foreground: var(--tag-violet-foreground);
+    --color-tag-cyan: var(--tag-cyan);
+    --color-tag-cyan-foreground: var(--tag-cyan-foreground);
+    --color-tag-amber: var(--tag-amber);
+    --color-tag-amber-foreground: var(--tag-amber-foreground);
+    --color-tag-slate: var(--tag-slate);
+    --color-tag-slate-foreground: var(--tag-slate-foreground);
+    --color-tag-red: var(--tag-red);
+    --color-tag-red-foreground: var(--tag-red-foreground);
+    --color-tag-brown: var(--tag-brown);
+    --color-tag-brown-foreground: var(--tag-brown-foreground);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+    --radius: 0.75rem;
+
+    --background: #f5f6fa;
+    --foreground: #141826;
+    --card: #ffffff;
+    --card-foreground: #141826;
+    --popover: #ffffff;
+    --popover-foreground: #141826;
+    --primary: #1e3a8a;
+    --primary-foreground: #ffffff;
+    --secondary: #ebeef5;
+    --secondary-foreground: #1b2236;
+    --muted: #eef0f5;
+    --muted-foreground: #586178;
+    --accent: #eaf0fc;
+    --accent-foreground: #182e6b;
+    --destructive: #c62828;
+    --destructive-foreground: #c62828;
+    --on-destructive: #ffffff;
+    --border: #dfe3ec;
+    --input: #cbd2df;
+    --ring: #4465c4;
+    --sunken: #eef1f6;
+
+    --brand-navy: #1e3a8a;
+    --brand-rose: #fb7185;
+    --logo-ink: #1e3a8a;
+
+    --handover: #fb7185;
+    --handover-foreground: #3b0a17;
+    --handover-ink: #be2a4b;
+    --handover-soft: #ffe8ec;
+
+    --success: #0e7a55;
+    --success-soft: #e3f5ee;
+    --warning: #a35c00;
+    --warning-soft: #fff3dc;
+    --info: #2f4fae;
+    --info-soft: #eaf0fc;
+    --danger-soft: #fdecec;
+
+    --bubble-in: #ffffff;
+    --bubble-in-foreground: #141826;
+    --bubble-out: #1e3a8a;
+    --bubble-out-foreground: #ffffff;
+    --bubble-bot: #e7ecf8;
+    --bubble-bot-foreground: #182e6b;
+    --bubble-note: #fff6db;
+    --bubble-note-foreground: #5b4100;
+    --bubble-note-border: #f0d58a;
+
+    --tag-blue: #e8eefc;
+    --tag-blue-foreground: #2846a8;
+    --tag-violet: #f1ebfe;
+    --tag-violet-foreground: #6232c4;
+    --tag-cyan: #e2f4f8;
+    --tag-cyan-foreground: #0b6a80;
+    --tag-amber: #fff2d9;
+    --tag-amber-foreground: #8f5200;
+    --tag-slate: #eceff4;
+    --tag-slate-foreground: #475069;
+    --tag-red: #fde9e9;
+    --tag-red-foreground: #b42323;
+    --tag-brown: #f6ece4;
+    --tag-brown-foreground: #82512e;
+
+    --chart-1: #1e3a8a;
+    --chart-2: #fb7185;
+    --chart-3: #6482d3;
+    --chart-4: #e0a100;
+    --chart-5: #98a1b5;
+
+    --sidebar: #1e3a8a;
+    --sidebar-foreground: #dce4f7;
+    --sidebar-primary: #ffffff;
+    --sidebar-primary-foreground: #1e3a8a;
+    --sidebar-accent: #284699;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #2c4a9e;
+    --sidebar-ring: #fb7185;
+}
+
+.dark {
+    --background: #0b0f1e;
+    --foreground: #e8ebf4;
+    --card: #121831;
+    --card-foreground: #e8ebf4;
+    --popover: #151c38;
+    --popover-foreground: #e8ebf4;
+    --primary: #4d6dd6;
+    --primary-foreground: #ffffff;
+    --secondary: #1c2442;
+    --secondary-foreground: #e8ebf4;
+    --muted: #182039;
+    --muted-foreground: #9aa3bc;
+    --accent: #1e2850;
+    --accent-foreground: #dce4ff;
+    --destructive: #f26464;
+    --destructive-foreground: #f26464;
+    --on-destructive: #2a0707;
+    --border: #242e52;
+    --input: #2d3860;
+    --ring: #7d96ea;
+    --sunken: #0e1428;
+
+    --brand-navy: #1e3a8a;
+    --brand-rose: #fb7185;
+    --logo-ink: #ffffff;
+
+    --handover: #fb7185;
+    --handover-foreground: #3b0a17;
+    --handover-ink: #ff8fa2;
+    --handover-soft: #3a1622;
+
+    --success: #4cc79a;
+    --success-soft: #0f2e25;
+    --warning: #f2b44c;
+    --warning-soft: #33260d;
+    --info: #8ea6f2;
+    --info-soft: #182448;
+    --danger-soft: #3a1717;
+
+    --bubble-in: #182040;
+    --bubble-in-foreground: #e8ebf4;
+    --bubble-out: #2a47a8;
+    --bubble-out-foreground: #ffffff;
+    --bubble-bot: #1a2550;
+    --bubble-bot-foreground: #c9d5ff;
+    --bubble-note: #33290f;
+    --bubble-note-foreground: #f5d98b;
+    --bubble-note-border: #5c4a16;
+
+    --tag-blue: #1b2b5c;
+    --tag-blue-foreground: #a9bdfa;
+    --tag-violet: #2c1f55;
+    --tag-violet-foreground: #c9b3ff;
+    --tag-cyan: #0f3340;
+    --tag-cyan-foreground: #8fd9ea;
+    --tag-amber: #3a2a0c;
+    --tag-amber-foreground: #f5c66b;
+    --tag-slate: #232b40;
+    --tag-slate-foreground: #b6bed2;
+    --tag-red: #3d1919;
+    --tag-red-foreground: #f5a3a3;
+    --tag-brown: #36261b;
+    --tag-brown-foreground: #e0b796;
+
+    --chart-1: #6e8bea;
+    --chart-2: #fb7185;
+    --chart-3: #a9bdfa;
+    --chart-4: #f2b44c;
+    --chart-5: #6b7489;
+
+    --sidebar: #0e1430;
+    --sidebar-foreground: #c7d0ea;
+    --sidebar-primary: #4d6dd6;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #19224a;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #1e2850;
+    --sidebar-ring: #fb7185;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        @apply bg-background font-sans text-body text-foreground;
+        font-feature-settings: 'kern';
+    }
+
+    h1,
+    h2,
+    h3 {
+        text-wrap: balance;
+    }
+
+    :focus-visible {
+        outline-color: var(--ring);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        ::before,
+        ::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/* Figures that line up in columns: counts, times, phone numbers. */
+@utility tabular {
+    font-variant-numeric: tabular-nums;
+}

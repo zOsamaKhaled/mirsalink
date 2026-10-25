@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mirsalink Logo Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@700&family=Space+Grotesk:wght@700&family=Manrope:wght@800&family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Outfit:wght@700&family=Unbounded:wght@600&family=Readex+Pro:wght@600&family=Alexandria:wght@700&family=IBM+Plex+Sans+Arabic:wght@700&family=Noto+Kufi+Arabic:wght@700&family=Almarai:wght@800&family=Reem+Kufi:wght@700&family=Fraunces:opsz,wght@9..144,700&family=El+Messiri:wght@700&family=Red+Hat+Display:wght@800&family=Changa:wght@700&family=Plus+Jakarta+Sans:wght@800&family=Mada:wght@800&family=Lexend:wght@600&family=Rubik:wght@600&family=Figtree:wght@800&family=Tajawal:wght@800&family=Urbanist:wght@800&family=Baloo+Bhaijaan+2:wght@700&family=Syne:wght@700&family=Kufam:wght@700&family=Archivo:wght@800&family=Lalezar&family=Onest:wght@700&family=Harmattan:wght@700&family=Geologica:wght@700&family=Markazi+Text:wght@700&family=Instrument+Sans:wght@700&family=Vazirmatn:wght@800&family=Albert+Sans:wght@800&family=Aref+Ruqaa:wght@700&family=Chivo:wght@800&family=Amiri:wght@700&family=Gabarito:wght@800&family=Marhey:wght@700&family=Jost:wght@600&family=Scheherazade+New:wght@700&family=Young+Serif&family=Noto+Naskh+Arabic:wght@700&family=Sen:wght@800&family=Lemonada:wght@700&family=Space+Mono:wght@700&family=Rakkas&family=Hanken+Grotesk:wght@800&family=Mirza:wght@700&family=Epilogue:wght@800&family=Ruwudu:wght@700&family=Commissioner:wght@800&family=Reem+Kufi+Fun:wght@700&family=Nunito:wght@800&family=Lateef:wght@700&family=Rethink+Sans:wght@800&family=Dela+Gothic+One&family=Jomhuria&family=Caveat:wght@700&family=Golos+Text:wght@700&family=Katibeh&family=Funnel+Display:wght@700&family=Handjet:wght@700&family=Montserrat+Alternates:wght@700&family=Gloock&family=Inter+Tight:wght@800&family=Baloo+2:wght@800&family=Righteous&family=Kanit:wght@700&family=Comfortaa:wght@700&display=swap">
+<style>
+:root {
+    --bg: #EEF0F4;
+    --surface: #FFFFFF;
+    --paper: #FFFFFF;
+    --text: #15161C;
+    --muted: #5B5F6B;
+    --line: #DDE0E7;
+    --focus: #3355FF;
+    --grid-fine: #C9CEDA;
+    --grid-guide: #3355FF;
+    --radius: 14px;
+    color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #0E0F13;
+        --surface: #17181E;
+        --text: #ECEDF1;
+        --muted: #9A9EAA;
+        --line: #2A2C35;
+        --focus: #8FA2FF;
+        color-scheme: dark;
+    }
+}
+:root[data-theme="dark"] {
+    --bg: #0E0F13;
+    --surface: #17181E;
+    --text: #ECEDF1;
+    --muted: #9A9EAA;
+    --line: #2A2C35;
+    --focus: #8FA2FF;
+    color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 400 15px/1.6 'Noto Sans Arabic', system-ui, sans-serif;
+}
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: .02em; direction: ltr; unicode-bidi: isolate; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+
+/* Header and controls */
+header.top { padding-top: 40px; padding-bottom: 20px; }
+header.top h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; }
+header.top p { margin: 0; color: var(--muted); max-width: 64ch; }
+
+.controls {
+    position: sticky; top: 0; z-index: 5;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+}
+.controls .wrap { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; padding-top: 12px; padding-bottom: 12px; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 12px; color: var(--muted); }
+.field input {
+    font: inherit; color: var(--text); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; width: 180px; min-height: 40px;
+}
+.toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; cursor: pointer; user-select: none; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--focus); }
+button {
+    font: inherit; color: var(--text); background: var(--surface); cursor: pointer;
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; min-height: 40px;
+    transition: border-color .15s, background .15s;
+}
+button:hover { border-color: var(--muted); }
+
+/* The overview strip: all six symbols side by side */
+.overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; margin: 12px 0 8px; }
+.group-title { margin: 36px 0 0; font-size: 18px; font-weight: 700; }
+.group-title small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); }
+.overview a {
+    display: grid; justify-items: center; gap: 8px; padding: 18px 8px 14px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    color: #15161C; text-decoration: none; transition: transform .15s, border-color .15s;
+}
+.overview a:hover { transform: translateY(-2px); border-color: #9AA0AE; }
+.overview span { font-size: 13px; font-weight: 500; }
+
+/* One concept */
+.concept {
+    margin: 28px 0; padding: 24px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+    scroll-margin-top: 90px;
+}
+.concept-head { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: start; margin-bottom: 20px; }
+.concept-head h3 { margin: 0; font-size: 26px; line-height: 1.2; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+
+.concept-head .idea { margin: 8px 0 0; max-width: 60ch; }
+.concept-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.swatch { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 6px; border: 1px solid var(--line); border-radius: 999px; }
+.swatch i { width: 18px; height: 18px; border-radius: 50%; display: block; }
+
+.board { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; }
+.tile {
+    background: var(--paper); color: #15161C;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; display: grid; gap: 10px; align-content: start;
+}
+.tile > .caption { font-size: 12px; color: #6A6F7C; }
+.stage { place-items: center; min-height: 340px; }
+.stage svg { width: min(100%, 300px); height: auto; }
+
+.specimens { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.specimens .tile { place-items: center; }
+.specimens .tile.on-ink { color: #fff; }
+.specimens .tile.on-ink .caption { color: rgba(255,255,255,.75); }
+.sizes { display: flex; align-items: end; justify-content: center; gap: 22px; }
+.sizes figure { margin: 0; display: grid; justify-items: center; gap: 6px; }
+.sizes figcaption { font-size: 11px; color: #6A6F7C; }
+
+.lockups { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.lockup { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 18px 0; }
+.lockup .word { font-size: 34px; line-height: 1; white-space: nowrap; }
+.lockup.ar .word { font-size: 36px; line-height: 1.3; }
+
+/* In context: a browser tab and a notification */
+.context { display: grid; gap: 10px; }
+.tab {
+    display: flex; align-items: center; gap: 8px; direction: ltr;
+    background: #E8EAEF; border-radius: 10px 10px 0 0; padding: 8px 12px; font-size: 13px;
+    max-width: 100%; overflow: hidden;
+}
+.tab span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2A2C33; }
+.notice { display: flex; gap: 12px; align-items: center; background: #F3F4F7; border-radius: 14px; padding: 10px 12px; }
+.notice b { display: block; font-size: 14px; }
+.notice small { color: #5B5F6B; font-size: 12px; }
+
+footer { padding: 8px 0 48px; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 900px) {
+    .board { grid-template-columns: minmax(0, 1fr); }
+    .lockups { grid-template-columns: minmax(0, 1fr); }
+    .overview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stage { min-height: 260px; }
+}
+@media (max-width: 480px) {
+    .concept { padding: 16px; }
+    .specimens { grid-template-columns: minmax(0, 1fr); }
+    .field input { width: 100%; }
+    .controls .wrap > .field { flex: 1 1 140px; }
+    .lockup .word { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="top wrap">
+    <h1>شعار ميرسالينك</h1>
+    <p>اتجاهات للرمز من «مرسال» و«لينك»، الأحدث أولًا. الرموز مرسومة على شبكة 48×48، وتعمل بلون واحد وبحجم 16 بكسل. حرف اللام الذي تشترك فيه الكلمتان ملوّن في الاسم: mirsa<b>l</b>ink، ميرسا<b>ل</b>ينك.</p>
+</header>
+
+<div class="controls">
+    <div class="wrap">
+        <div class="field">
+            <label for="name-en">الاسم باللاتينية</label>
+            <input id="name-en" type="text" value="mirsalink" autocomplete="off" dir="ltr">
+        </div>
+        <div class="field">
+            <label for="name-ar">الاسم بالعربية</label>
+            <input id="name-ar" type="text" value="ميرسالينك" autocomplete="off">
+        </div>
+        <label class="toggle"><input id="show-grid" type="checkbox" checked> شبكة البناء</label>
+        <button id="theme" type="button">الوضع الداكن</button>
+    </div>
+</div>
+
+<main class="wrap">
+    <div id="groups"></div>
+</main>
+
+<footer class="wrap">
+    قبل اعتماد الرمز: بحث بالصورة (Google Lens) عن علامات مشابهة، وتسجيل الاسم والرمز علامةً تجارية.
+</footer>
+
+<script src="logos.js"></script>
+<script>
+const nameInputs = { en: document.getElementById('name-en'), ar: document.getElementById('name-ar') };
+const gridToggle = document.getElementById('show-grid');
+
+const plainEn = () => nameInputs.en.value.trim() || BRAND.en.name;
+const plainAr = () => nameInputs.ar.value.trim() || BRAND.ar.name;
+
+/** The name with its shared letter in the accent, while it is still the brand's own name. */
+function wordmark(lang, accent) {
+    const brand = BRAND[lang];
+    const typed = lang === 'en' ? plainEn() : plainAr();
+    if (typed !== brand.name) {
+        return escapeHtml(typed);
+    }
+    const [before, shared, after] = brand.split;
+
+    return `${before}<span style="color:${accent}">${shared}</span>${after}`;
+}
+
+function render() {
+    const groups = [
+        { title: 'الجولة السادسة', note: 'من المكان: الشرفات النجدية، واللؤلؤة. ومن الحرف: ميم بلغتين، والفريق. ومن الصندوق: فتحة الرسائل، والصندوق المجسّم، والضفيرة.', items: CONCEPTS.filter((c) => c.batch === 6) },
+        { title: 'الجولة الخامسة', note: 'من المكان: المشربية، والفنجان، والسدو، والفنار. ومن الحرف: الشريط المطوي، والتوقيع. ومن البريد: صندوق برايته.', items: CONCEPTS.filter((c) => c.batch === 5) },
+        { title: 'الجولة الرابعة', note: 'من الثقافة والخط واللغة: الهدهد، والواو، وسنّ القلم. ومن عمل المنصة: الرسالة الصوتية، والوسم.', items: CONCEPTS.filter((c) => c.batch === 4) },
+        { title: 'الجولة الثالثة', note: 'من عمل المنصة نفسها: التسليم بين الروبوت والموظف، والفرز، وملكية البيانات، ومن شكل الاسم.', items: CONCEPTS.filter((c) => c.batch === 3) },
+        { title: 'الجولة الثانية', note: 'الأمانة، والخط العربي، والحرف المشترك، والسرعة.', items: CONCEPTS.filter((c) => c.batch === 2) },
+        { title: 'الجولة الأولى', note: 'الحرف المشترك، والرسائل المتشابكة، والميم، والالتقاء، والتوجيه.', items: CONCEPTS.filter((c) => !c.batch) },
+    ];
+
+    document.getElementById('groups').innerHTML = groups.map((group) => `
+        <h2 class="group-title">${group.title}<small>${group.note}</small></h2>
+        <nav class="overview" aria-label="${group.title}">
+            ${group.items.map((c) => `<a href="#${c.id}">${symbolSvg(c, { size: 56 })}<span>${c.title}</span></a>`).join('')}
+        </nav>
+        ${group.items.map(conceptSection).join('')}`).join('');
+}
+
+function conceptSection(c) {
+    const grid = gridToggle.checked;
+
+    return `
+        <section class="concept" id="${c.id}" aria-labelledby="${c.id}-title">
+            <div class="concept-head">
+                <div>
+                    <h3 id="${c.id}-title">${c.title}</h3>
+                    <p class="idea">${c.idea}</p>
+                </div>
+                <div class="concept-tools">
+                    <span class="swatch"><i style="background:${c.ink}"></i><span class="mono">${c.ink}</span></span>
+                    <span class="swatch"><i style="background:${c.accent}"></i><span class="mono">${c.accent}</span></span>
+                    <button type="button" data-download="${c.id}" data-kind="symbol">تنزيل الرمز SVG</button>
+                    <button type="button" data-download="${c.id}" data-kind="icon">تنزيل الأيقونة SVG</button>
+                </div>
+            </div>
+
+            <div class="board">
+                <div class="tile stage">${symbolSvg(c, { size: 300, grid, label: `رمز ${c.title}` })}</div>
+
+                <div class="specimens">
+                    <div class="tile">
+                        <span class="caption">أيقونة التطبيق</span>
+                        ${appIconSvg(c, { size: 96 })}
+                    </div>
+                    <div class="tile on-ink" style="background:${c.ink}; border-color:${c.ink}">
+                        <span class="caption">أبيض على اللون الأساسي</span>
+                        ${symbolSvg(c, { size: 84, ...monoColors(c, '#FFFFFF', c.ink) })}
+                    </div>
+                    <div class="tile">
+                        <span class="caption">أسود فقط</span>
+                        ${symbolSvg(c, { size: 84, ...monoColors(c, '#000000', '#FFFFFF') })}
+                    </div>
+                    <div class="tile">
+                        <span class="caption">الأحجام الصغيرة</span>
+                        <div class="sizes">
+                            <figure>${symbolSvg(c, { size: 64 })}<figcaption class="mono">64</figcaption></figure>
+                            <figure>${symbolSvg(c, { size: 32 })}<figcaption class="mono">32</figcaption></figure>
+                            <figure>${appIconSvg(c, { size: 16 })}<figcaption class="mono">16</figcaption></figure>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lockups">
+                    <div class="tile">
+                        <span class="caption">الشعار باللاتينية</span>
+                        <div class="lockup" dir="ltr">
+                            ${symbolSvg(c, { size: 46 })}
+                            <span class="word" style="font-family:${c.latinFont}; font-weight:${c.latinWeight}; color:${c.ink}">${wordmark('en', c.accent)}</span>
+                        </div>
+                    </div>
+                    <div class="tile">
+                        <span class="caption">الشعار بالعربية</span>
+                        <div class="lockup ar" dir="rtl">
+                            ${symbolSvg(c, { size: 46 })}
+                            <span class="word" style="font-family:${c.arabicFont}; font-weight:${c.arabicWeight}; color:${c.ink}">${wordmark('ar', c.accent)}</span>
+                        </div>
+                    </div>
+                    <div class="tile context">
+                        <span class="caption">في الاستخدام</span>
+                        <div class="tab">${appIconSvg(c, { size: 16 })}<span>${escapeHtml(plainEn())}.com · Inbox</span></div>
+                        <div class="notice">
+                            ${appIconSvg(c, { size: 38 })}
+                            <div><b>${escapeHtml(plainAr())}</b><small>رسالة جديدة من عميل محتمل · الآن</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>`;
+}
+
+function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-download]');
+    if (!button) {
+        return;
+    }
+    const concept = CONCEPTS.find((c) => c.id === button.dataset.download);
+    const isIcon = button.dataset.kind === 'icon';
+    const markup = isIcon ? appIconSvg(concept, { size: 512 }) : symbolSvg(concept, { size: 512 });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }));
+    link.download = `mirsalink-${concept.id}-${isIcon ? 'app-icon' : 'symbol'}.svg`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+});
+
+nameInputs.en.addEventListener('input', render);
+nameInputs.ar.addEventListener('input', render);
+gridToggle.addEventListener('change', render);
+
+const themeButton = document.getElementById('theme');
+function currentTheme() {
+    return document.documentElement.dataset.theme
+        || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+function labelTheme() {
+    themeButton.textContent = currentTheme() === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن';
+}
+themeButton.addEventListener('click', () => {
+    document.documentElement.dataset.theme = currentTheme() === 'dark' ? 'light' : 'dark';
+    labelTheme();
+});
+
+labelTheme();
+render();
+</script>
+</body>
+</html>
