@@ -1,8 +1,16 @@
+export type Role = 'supervisor' | 'agent';
+
+export type Availability = 'available' | 'busy' | 'away';
+
 export type User = {
     id: number;
     name: string;
     email: string;
     avatar?: string;
+    role: Role;
+    availability: Availability;
+    invited_at: string | null;
+    deactivated_at: string | null;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     created_at: string;
@@ -12,6 +20,9 @@ export type User = {
 
 export type Auth = {
     user: User;
+    can: {
+        manageTeam: boolean;
+    };
 };
 
 export type Passkey = {

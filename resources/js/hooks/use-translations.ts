@@ -8,13 +8,14 @@ function resolve(
 ): TranslationNode | undefined {
     return key
         .split('.')
-        .reduce<TranslationNode | undefined>(
-            (node, segment) =>
-                node && !Array.isArray(node) && typeof node === 'object'
-                    ? node[segment]
-                    : undefined,
-            translations,
-        );
+        .reduce<TranslationNode | undefined>((node, segment) => {
+            // Lists (the days of the week) are read by their position.
+            if (Array.isArray(node)) {
+                return node[Number(segment)];
+            }
+
+            return node && typeof node === 'object' ? node[segment] : undefined;
+        }, translations);
 }
 
 /**

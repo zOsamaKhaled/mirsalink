@@ -46,6 +46,9 @@ class HandleInertiaRequests extends Middleware
                 ->as($this->translationsKey()),
             'auth' => [
                 'user' => $request->user(),
+                'can' => [
+                    'manageTeam' => $request->user()?->can('manage-team') ?? false,
+                ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

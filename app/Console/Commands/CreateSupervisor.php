@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Enums\Role;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -41,7 +42,10 @@ class CreateSupervisor extends Command
         }
 
         // A supervisor made on the server needs no email round trip to log in.
-        $user->forceFill(['email_verified_at' => now()])->save();
+        $user->forceFill([
+            'role' => Role::Supervisor,
+            'email_verified_at' => now(),
+        ])->save();
 
         $this->components->info("Created {$user->email}. They can log in at ".route('login').'.');
 

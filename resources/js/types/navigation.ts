@@ -13,4 +13,6 @@ export type NavItem = {
     isActive?: boolean;
     /** Not built yet: shown greyed with a "Soon" label instead of a link. */
     soon?: boolean;
+    /** Marks the item current on every page under this path, e.g. "/team". */
+    section?: string;
 };

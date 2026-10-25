@@ -17,7 +17,7 @@ const ACTIVE =
     'data-[active=true]:bg-sidebar-primary data-[active=true]:font-bold data-[active=true]:text-sidebar-primary-foreground';
 
 export function NavMain({ label, items }: { label: string; items: NavItem[] }) {
-    const { isCurrentUrl } = useCurrentUrl();
+    const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
     const { t } = useTranslations();
 
     return (
@@ -41,7 +41,11 @@ export function NavMain({ label, items }: { label: string; items: NavItem[] }) {
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
-                                isActive={isCurrentUrl(item.href)}
+                                isActive={
+                                    item.section
+                                        ? isCurrentOrParentUrl(item.section)
+                                        : isCurrentUrl(item.href)
+                                }
                                 tooltip={{ children: item.title }}
                                 className={ACTIVE}
                             >

@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\Availability;
+use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -43,6 +45,41 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function supervisor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => Role::Supervisor,
+        ]);
+    }
+
+    public function availability(Availability $availability): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'availability' => $availability,
+        ]);
+    }
+
+    /**
+     * Invited by a supervisor and not yet in: no confirmed email, and a
+     * password no one knows until the invitation is accepted.
+     */
+    public function invited(?User $by = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified_at' => null,
+            'password' => Hash::make(Str::random(40)),
+            'invited_at' => now(),
+            'invited_by' => $by?->id,
+        ]);
+    }
+
+    public function deactivated(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'deactivated_at' => now(),
         ]);
     }
 

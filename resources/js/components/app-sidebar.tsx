@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BarChart3,
     BookOpenText,
@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useTranslations } from '@/hooks/use-translations';
 import { dashboard } from '@/routes';
+import { index as teamMembers } from '@/routes/team/members';
 import type { NavItem } from '@/types';
 
 /*
@@ -35,6 +36,7 @@ import type { NavItem } from '@/types';
 
 export function AppSidebar() {
     const { t, dir } = useTranslations();
+    const { auth } = usePage().props;
 
     const workspace: NavItem[] = [
         { title: t('nav.dashboard'), href: dashboard(), icon: LayoutGrid },
@@ -51,8 +53,14 @@ export function AppSidebar() {
         { title: t('nav.reports'), href: '#', icon: BarChart3, soon: true },
     ];
 
+    // Supervisors only: agents never see the management section.
     const management: NavItem[] = [
-        { title: t('nav.team'), href: '#', icon: Users, soon: true },
+        {
+            title: t('nav.team'),
+            href: teamMembers(),
+            icon: Users,
+            section: '/team',
+        },
         { title: t('nav.routing'), href: '#', icon: Tags, soon: true },
     ];
 
@@ -80,7 +88,9 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain label={t('nav.workspace')} items={workspace} />
-                <NavMain label={t('nav.management')} items={management} />
+                {auth.can.manageTeam && (
+                    <NavMain label={t('nav.management')} items={management} />
+                )}
             </SidebarContent>
 
             <SidebarFooter>
