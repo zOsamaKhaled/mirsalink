@@ -1,4 +1,5 @@
-import { Bot } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { AlarmClock, Bot } from 'lucide-react';
 
 import { CategoryTag } from '@/components/inbox/category-tag';
 import type { TagTone } from '@/components/inbox/category-tag';
@@ -13,7 +14,8 @@ export type ConversationHandler =
 /**
  * One customer in the inbox list. Unread messages make the name bold and
  * put a rose count at the end; a conversation the bot handed over and no one
- * has taken yet shows the handover mark before the name.
+ * has taken yet shows the handover mark before the name. With `href` the
+ * row is a link (it opens in a new tab like any link); without, a button.
  */
 export function ConversationItem({
     name,
@@ -27,6 +29,9 @@ export function ConversationItem({
     selected = false,
     closed = false,
     unreadLabel,
+    flag,
+    href,
+    nameIsPhone = false,
     onClick,
 }: {
     name: string;
@@ -41,20 +46,22 @@ export function ConversationItem({
     closed?: boolean;
     /** e.g. "3 unread messages", read out instead of the bare number. */
     unreadLabel?: string;
+    /** A warning for the supervisor, such as "Waiting long". */
+    flag?: string;
+    href?: string;
+    /** A number standing in for a missing name reads left to right. */
+    nameIsPhone?: boolean;
     onClick?: () => void;
 }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            aria-current={selected ? 'true' : undefined}
-            className={cn(
-                'flex w-full items-start gap-3 rounded-xl px-3 py-3 text-start transition-colors',
-                'hover:bg-accent/70 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none',
-                selected && 'bg-accent hover:bg-accent',
-                closed && 'opacity-70',
-            )}
-        >
+    const rowClass = cn(
+        'flex w-full items-start gap-3 rounded-xl px-3 py-3 text-start transition-colors',
+        'hover:bg-accent/70 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none',
+        selected && 'bg-accent hover:bg-accent',
+        closed && 'opacity-70',
+    );
+
+    const content = (
+        <>
             <Avatar className="size-10">
                 <AvatarFallback className="bg-secondary font-display text-body-sm font-semibold text-secondary-foreground">
                     {initials}
@@ -65,30 +72,33 @@ export function ConversationItem({
                 <span className="flex items-center gap-2">
                     {waitingForPerson && <HandoverMark className="size-4" />}
                     <span
+                        dir={nameIsPhone ? 'ltr' : 'auto'}
                         className={cn(
-                            'min-w-0 flex-1 truncate text-body',
+                            'min-w-0 truncate text-body',
+                            nameIsPhone && 'tabular',
                             unread > 0 ? 'font-bold' : 'font-medium',
                         )}
                     >
                         {name}
                     </span>
+                    {/* The direction sits inside: on the time itself it would turn ms-auto to the wrong side. */}
                     <time
-                        dir="ltr"
                         className={cn(
-                            'shrink-0 text-caption tabular',
+                            'ms-auto shrink-0 text-caption tabular',
                             unread > 0
                                 ? 'font-semibold text-handover-ink'
                                 : 'text-muted-foreground',
                         )}
                     >
-                        {time}
+                        <bdi dir="ltr">{time}</bdi>
                     </time>
                 </span>
 
                 <span className="flex items-center gap-2">
                     <span
+                        dir="auto"
                         className={cn(
-                            'min-w-0 flex-1 truncate text-body-sm',
+                            'min-w-0 truncate text-body-sm',
                             unread > 0
                                 ? 'text-foreground'
                                 : 'text-muted-foreground',
@@ -98,7 +108,7 @@ export function ConversationItem({
                     </span>
                     {unread > 0 && (
                         <span
-                            className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-handover px-1.5 text-caption font-bold text-handover-foreground tabular"
+                            className="ms-auto grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-handover px-1.5 text-caption font-bold text-handover-foreground tabular"
                             aria-label={unreadLabel}
                         >
                             {unread}
@@ -106,8 +116,14 @@ export function ConversationItem({
                     )}
                 </span>
 
-                {(tags.length > 0 || handler) && (
+                {(tags.length > 0 || handler || flag) && (
                     <span className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        {flag && (
+                            <span className="inline-flex h-6 items-center gap-1 rounded-full bg-warning-soft px-2.5 text-caption font-medium text-warning">
+                                <AlarmClock className="size-3.5" />
+                                {flag}
+                            </span>
+                        )}
                         {tags.map((tag) => (
                             <CategoryTag
                                 key={tag.label}
@@ -137,6 +153,32 @@ export function ConversationItem({
                     </span>
                 )}
             </span>
+        </>
+    );
+
+    if (href) {
+        return (
+            <Link
+                href={href}
+                preserveState
+                preserveScroll
+                onClick={onClick}
+                aria-current={selected ? 'page' : undefined}
+                className={rowClass}
+            >
+                {content}
+            </Link>
+        );
+    }
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-current={selected ? 'true' : undefined}
+            className={rowClass}
+        >
+            {content}
         </button>
     );
 }

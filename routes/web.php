@@ -17,3 +17,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 require __DIR__.'/settings.php';
 require __DIR__.'/team.php';
 require __DIR__.'/contacts.php';
+require __DIR__.'/inbox.php';

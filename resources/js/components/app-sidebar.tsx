@@ -26,6 +26,7 @@ import {
 import { useTranslations } from '@/hooks/use-translations';
 import { dashboard } from '@/routes';
 import { index as contacts } from '@/routes/contacts';
+import { index as inbox } from '@/routes/inbox';
 import { index as routing } from '@/routes/routing';
 import { index as teamMembers } from '@/routes/team/members';
 import type { NavItem } from '@/types';
@@ -42,7 +43,12 @@ export function AppSidebar() {
 
     const workspace: NavItem[] = [
         { title: t('nav.dashboard'), href: dashboard(), icon: LayoutGrid },
-        { title: t('nav.inbox'), href: '#', icon: Inbox, soon: true },
+        {
+            title: t('nav.inbox'),
+            href: inbox(),
+            icon: Inbox,
+            section: '/inbox',
+        },
         {
             title: t('nav.contacts'),
             href: contacts(),

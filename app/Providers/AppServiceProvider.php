@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\WhatsApp\Gateway;
+use App\WhatsApp\SimulatorGateway;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // The simulator now, Meta's Cloud API from phase 9; see config/whatsapp.php.
+        $this->app->bind(Gateway::class, fn ($app) => $app->make(
+            config('whatsapp.gateways.'.config('whatsapp.gateway'), SimulatorGateway::class),
+        ));
     }
 
     /**
