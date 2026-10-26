@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Inbox;
 
 use App\Actions\Inbox\ReceiveMessage;
 use App\Actions\Inbox\UpdateMessageStatus;
+use App\Actions\Templates\RecordTemplateDecision;
 use App\Enums\MessageDirection;
 use App\Enums\MessageStatus;
 use App\Enums\MessageType;
+use App\Enums\TemplateStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\Message;
+use App\Models\Template;
 use App\Support\PhoneNumber;
+use App\Support\TemplatePresenter;
 use App\WhatsApp\Gateway;
 use App\WhatsApp\InboundMessage;
 use App\WhatsApp\SimulatorGateway;
@@ -32,6 +36,11 @@ class SimulatorController extends Controller
         $this->ensureSimulator();
 
         return Inertia::render('inbox/simulator', [
+            'pendingTemplates' => Template::query()
+                ->where('status', TemplateStatus::Pending)
+                ->orderBy('submitted_at')
+                ->get()
+                ->map(fn (Template $template): array => TemplatePresenter::present($template)),
             'contacts' => Contact::query()
                 ->orderByDesc('last_message_at')
                 ->orderBy('name')
@@ -114,6 +123,26 @@ class SimulatorController extends Controller
             $status === MessageStatus::Failed ? '131026' : null,
             $status === MessageStatus::Failed ? __('app.simulator.failure') : null,
         );
+
+        return back();
+    }
+
+    /**
+     * Meta's review of a template, played here: approve it, or refuse it
+     * with a reason.
+     */
+    public function decide(Request $request, Template $template, RecordTemplateDecision $record): RedirectResponse
+    {
+        $this->ensureSimulator();
+
+        $validated = $request->validate([
+            'decision' => ['required', 'in:approved,rejected'],
+            'reason' => ['nullable', 'required_if:decision,rejected', 'string', 'max:255'],
+        ], [], ['reason' => __('app.simulator.templates.reason')]);
+
+        abort_unless($template->status === TemplateStatus::Pending, 409);
+
+        $record->handle($template, TemplateStatus::from($validated['decision']), $validated['reason'] ?? null);
 
         return back();
     }

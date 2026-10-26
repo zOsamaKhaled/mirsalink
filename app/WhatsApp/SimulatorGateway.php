@@ -3,6 +3,7 @@
 namespace App\WhatsApp;
 
 use App\Models\Message;
+use App\Models\Template;
 use Illuminate\Support\Str;
 
 /**
@@ -17,5 +18,14 @@ class SimulatorGateway implements Gateway
     public function send(Message $message): SendResult
     {
         return SendResult::accepted('wamid.sim.'.Str::uuid()->toString());
+    }
+
+    /**
+     * Takes every template for review; the simulator page approves or
+     * refuses it.
+     */
+    public function submitTemplate(Template $template): SendResult
+    {
+        return SendResult::accepted('tpl.sim.'.Str::uuid()->toString());
     }
 }

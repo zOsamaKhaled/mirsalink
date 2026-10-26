@@ -19,6 +19,8 @@ use Illuminate\Support\Carbon;
  * @property MessageSender $sender
  * @property int|null $user_id
  * @property MessageType $type
+ * @property int|null $template_id
+ * @property array{body?: list<string>, header?: string|null, button?: string|null}|null $template_params
  * @property string|null $body
  * @property string|null $media_path
  * @property string|null $media_mime
@@ -56,7 +58,16 @@ class Message extends Model
             'delivered_at' => 'datetime',
             'read_at' => 'datetime',
             'failed_at' => 'datetime',
+            'template_params' => 'array',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Template, $this>
+     */
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(Template::class);
     }
 
     /**

@@ -27,8 +27,10 @@ import { useTranslations } from '@/hooks/use-translations';
 import { dashboard } from '@/routes';
 import { index as contacts } from '@/routes/contacts';
 import { index as inbox } from '@/routes/inbox';
+import { index as knowledge } from '@/routes/knowledge';
 import { index as routing } from '@/routes/routing';
 import { index as teamMembers } from '@/routes/team/members';
+import { index as templates } from '@/routes/templates';
 import type { NavItem } from '@/types';
 
 /*
@@ -56,12 +58,17 @@ export function AppSidebar() {
             section: '/contacts',
         },
         { title: t('nav.broadcasts'), href: '#', icon: Megaphone, soon: true },
-        { title: t('nav.templates'), href: '#', icon: FileText, soon: true },
+        {
+            title: t('nav.templates'),
+            href: templates(),
+            icon: FileText,
+            section: '/templates',
+        },
         {
             title: t('nav.knowledge'),
-            href: '#',
+            href: knowledge(),
             icon: BookOpenText,
-            soon: true,
+            section: '/knowledge',
         },
         { title: t('nav.reports'), href: '#', icon: BarChart3, soon: true },
     ];

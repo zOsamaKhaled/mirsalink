@@ -6,6 +6,7 @@ use App\Actions\Inbox\AddNote;
 use App\Actions\Inbox\AssignConversation;
 use App\Actions\Inbox\CloseConversation;
 use App\Actions\Inbox\SendMessage;
+use App\Actions\Inbox\SendTemplate;
 use App\Actions\Inbox\TagConversation;
 use App\Exceptions\InboxRuleException;
 use App\Http\Controllers\Controller;
@@ -13,6 +14,7 @@ use App\Http\Requests\Inbox\SendMessageRequest;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Tag;
+use App\Models\Template;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,6 +44,30 @@ class ConversationController extends Controller
             $request->user(),
             $request->validated('body'),
             $request->file('file'),
+        ));
+    }
+
+    public function template(Request $request, Conversation $conversation, SendTemplate $send): RedirectResponse
+    {
+        $this->authorizeVisible($request, $conversation);
+
+        $validated = $request->validate([
+            'template_id' => ['required', 'integer', 'exists:templates,id'],
+            'body' => ['array'],
+            'body.*' => ['nullable', 'string', 'max:1000'],
+            'header' => ['nullable', 'string', 'max:60'],
+            'button' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        return $this->attempt(fn () => $send->handle(
+            $conversation,
+            $request->user(),
+            Template::query()->findOrFail($validated['template_id']),
+            [
+                'body' => array_values($validated['body'] ?? []),
+                'header' => $validated['header'] ?? null,
+                'button' => $validated['button'] ?? null,
+            ],
         ));
     }
 

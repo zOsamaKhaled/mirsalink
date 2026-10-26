@@ -12,6 +12,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('inbox/{conversation}/messages', [ConversationController::class, 'message'])
         ->middleware('throttle:120,1')
         ->name('inbox.messages.store');
+    Route::post('inbox/{conversation}/template', [ConversationController::class, 'template'])
+        ->middleware('throttle:60,1')
+        ->name('inbox.template.store');
     Route::put('inbox/{conversation}/assignee', [ConversationController::class, 'assign'])->name('inbox.assignee.update');
     Route::post('inbox/{conversation}/tags', [ConversationController::class, 'tag'])->name('inbox.tags.store');
     Route::delete('inbox/{conversation}/tags/{tag}', [ConversationController::class, 'untag'])->name('inbox.tags.destroy');
@@ -24,5 +27,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('simulator', [SimulatorController::class, 'index'])->name('simulator.index');
         Route::post('simulator/messages', [SimulatorController::class, 'store'])->name('simulator.messages.store');
         Route::put('simulator/messages/{message}/status', [SimulatorController::class, 'status'])->name('simulator.messages.status');
+        Route::put('simulator/templates/{template}', [SimulatorController::class, 'decide'])->name('simulator.templates.decide');
     });
 });

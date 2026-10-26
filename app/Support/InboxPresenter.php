@@ -4,10 +4,12 @@ namespace App\Support;
 
 use App\Enums\ConversationEventType;
 use App\Enums\MessageDirection;
+use App\Enums\TemplateHeader;
 use App\Models\Conversation;
 use App\Models\ConversationEvent;
 use App\Models\Message;
 use App\Models\Tag;
+use App\Models\Template;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -85,7 +87,7 @@ class InboxPresenter
     public static function thread(Conversation $conversation): array
     {
         $messages = $conversation->messages()
-            ->with('author:id,name')
+            ->with(['author:id,name', 'template'])
             ->latest('id')
             ->limit((int) config('inbox.thread_size'))
             ->get();
@@ -133,6 +135,14 @@ class InboxPresenter
             ],
             'status' => $message->status?->value,
             'error' => $message->error_message,
+            'template' => $message->template === null ? null : [
+                'name' => $message->template->name,
+                'header' => $message->template->header_type === TemplateHeader::Text
+                    ? Template::withValues($message->template->header_text, array_filter([$message->template_params['header'] ?? null]))
+                    : null,
+                'footer' => $message->template->footer,
+                'buttons' => array_column($message->template->buttons ?? [], 'text'),
+            ],
         ];
     }
 

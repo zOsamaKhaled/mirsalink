@@ -18,3 +18,4 @@ require __DIR__.'/settings.php';
 require __DIR__.'/team.php';
 require __DIR__.'/contacts.php';
 require __DIR__.'/inbox.php';
+require __DIR__.'/templates.php';

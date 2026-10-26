@@ -6,11 +6,12 @@ import {
     useForm,
     usePoll,
 } from '@inertiajs/react';
-import { Inbox, Paperclip, Send } from 'lucide-react';
+import { Check, Inbox, Paperclip, Send, X } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
 import { MessageStatus } from '@/components/inbox/message-status';
+import { TemplatePreview } from '@/components/inbox/template-preview';
 import type { DeliveryStatus } from '@/components/inbox/message-status';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,8 @@ import { cn } from '@/lib/utils';
 import { index as inbox } from '@/routes/inbox';
 import { index } from '@/routes/simulator';
 import { status as markStatus, store } from '@/routes/simulator/messages';
+import { decide } from '@/routes/simulator/templates';
+import type { WhatsAppTemplate } from '@/types/templates';
 
 type SimContact = { id: number; name: string | null; phone: string };
 
@@ -55,13 +58,15 @@ const RANK: Record<DeliveryStatus, number> = {
 export default function Simulator({
     contacts,
     sent,
+    pendingTemplates,
 }: {
     contacts: SimContact[];
     sent: SentMessage[];
+    pendingTemplates: WhatsAppTemplate[];
 }) {
     const { t } = useTranslations();
 
-    usePoll(5000, { only: ['sent'] });
+    usePoll(5000, { only: ['sent', 'pendingTemplates'] });
 
     setLayoutProps({
         breadcrumbs: [
@@ -91,6 +96,10 @@ export default function Simulator({
                         </Link>
                     </Button>
                 </header>
+
+                {pendingTemplates.length > 0 && (
+                    <PendingTemplates templates={pendingTemplates} />
+                )}
 
                 <div className="grid items-start gap-6 lg:grid-cols-2">
                     <CustomerForm contacts={contacts} />
@@ -393,6 +402,104 @@ function SentList({ sent }: { sent: SentMessage[] }) {
                     })}
                 </ul>
             )}
+        </section>
+    );
+}
+
+/**
+ * Meta's review, played here: each template sent for review waits for an
+ * approval or a refusal with its reason.
+ */
+function PendingTemplates({ templates }: { templates: WhatsAppTemplate[] }) {
+    const { t } = useTranslations();
+    const [reasons, setReasons] = useState<Record<number, string>>({});
+
+    const record = (
+        template: WhatsAppTemplate,
+        decision: 'approved' | 'rejected',
+    ) =>
+        router.put(
+            decide.url(template.id),
+            {
+                decision,
+                reason:
+                    decision === 'rejected'
+                        ? (reasons[template.id] ??
+                          t('simulator.templates.default_reason'))
+                        : null,
+            },
+            { preserveScroll: true, preserveState: true },
+        );
+
+    return (
+        <section className="flex flex-col gap-3 rounded-2xl border bg-card p-5">
+            <div className="flex flex-col gap-1">
+                <h2 className="text-title font-bold">
+                    {t('simulator.templates.title')}
+                </h2>
+                <p className="text-body-sm text-muted-foreground">
+                    {t('simulator.templates.hint')}
+                </p>
+            </div>
+
+            <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {templates.map((template) => (
+                    <li
+                        key={template.id}
+                        className="flex flex-col gap-3 rounded-xl border p-3"
+                    >
+                        <bdi
+                            dir="ltr"
+                            className="truncate font-mono text-body-sm font-semibold"
+                        >
+                            {template.name}
+                        </bdi>
+                        <div className="rounded-xl bg-sunken p-3">
+                            <TemplatePreview
+                                headerType={template.header_type}
+                                headerText={template.header_text}
+                                headerValue={template.header_example}
+                                body={template.body}
+                                values={template.body_examples}
+                                footer={template.footer}
+                                buttons={template.buttons}
+                            />
+                        </div>
+                        <Input
+                            value={
+                                reasons[template.id] ??
+                                t('simulator.templates.default_reason')
+                            }
+                            onChange={(event) =>
+                                setReasons({
+                                    ...reasons,
+                                    [template.id]: event.target.value,
+                                })
+                            }
+                            dir="auto"
+                            aria-label={t('simulator.templates.reason')}
+                            className="h-9"
+                        />
+                        <div className="flex gap-2">
+                            <Button
+                                size="sm"
+                                onClick={() => record(template, 'approved')}
+                            >
+                                <Check />
+                                {t('simulator.templates.approve')}
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => record(template, 'rejected')}
+                            >
+                                <X />
+                                {t('simulator.templates.reject')}
+                            </Button>
+                        </div>
+                    </li>
+                ))}
+            </ul>
         </section>
     );
 }

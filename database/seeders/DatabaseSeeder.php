@@ -11,11 +11,17 @@ use App\Enums\MessageStatus;
 use App\Enums\MessageType;
 use App\Enums\RoutingMethod;
 use App\Enums\TagColor;
+use App\Enums\TemplateCategory;
+use App\Enums\TemplateHeader;
+use App\Enums\TemplateStatus;
 use App\Models\Contact;
 use App\Models\Conversation;
 use App\Models\ConversationEvent;
+use App\Models\KnowledgeEntry;
+use App\Models\QuickReply;
 use App\Models\RoutingRule;
 use App\Models\Tag;
+use App\Models\Template;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -68,6 +74,106 @@ class DatabaseSeeder extends Seeder
         $this->seedTagsAndRouting();
         $this->seedContacts();
         $this->seedConversations();
+        $this->seedRepliesAndTemplates($supervisor);
+        $this->seedKnowledge($supervisor);
+    }
+
+    /**
+     * The team's usual replies, one of Sara's own, and templates in each
+     * state Meta can leave them.
+     */
+    private function seedRepliesAndTemplates(User $supervisor): void
+    {
+        $replies = [
+            [null, 'welcome', 'ترحيب', 'أهلًا {name}، معك {agent} من فريق رزق. كيف أقدر أخدمك اليوم؟'],
+            [null, 'prices', 'الأسعار', "باقاتنا تبدأ من 1,500 ريال شهريًا للعامل، وتشمل التأمين والسكن.\nأرسل لي المهنة وعدد العمال وأجهز لك عرضًا."],
+            [null, 'docs', 'المستندات المطلوبة', 'نحتاج صورة السجل التجاري، وصورة هوية المفوَّض، وعنوان الموقع.'],
+            [null, 'thanks', 'شكر وإغلاق', 'شكرًا لتواصلك يا {name}. إن احتجت أي شيء فنحن هنا.'],
+            ['sara@mirsalink.test', 'followup', 'متابعة عرض', 'أهلًا {name}، هل اطلعت على العرض الذي أرسلته؟ يسعدني الإجابة عن أي سؤال.'],
+        ];
+
+        foreach ($replies as [$owner, $shortcut, $title, $body]) {
+            $reply = new QuickReply([
+                'user_id' => $owner === null ? null : User::query()->where('email', $owner)->value('id'),
+                'shortcut' => $shortcut,
+                'title' => $title,
+                'body' => $body,
+            ]);
+            $reply->created_by = $supervisor->id;
+            $reply->save();
+        }
+
+        $templates = [
+            [
+                'name' => 'order_follow_up', 'category' => TemplateCategory::Utility, 'status' => TemplateStatus::Approved,
+                'header_type' => TemplateHeader::Text, 'header_text' => 'طلبك رقم {{1}}', 'header_example' => '1024',
+                'body' => 'مرحبًا {{1}}، نتابع معك طلب العمالة الذي قدمته يوم {{2}}. هل تحتاج مساعدة في إكماله؟',
+                'body_examples' => ['أبو فهد', 'الأحد'], 'footer' => 'رزق للاستقدام',
+                'buttons' => [['type' => 'quick_reply', 'text' => 'نعم، أحتاج مساعدة'], ['type' => 'quick_reply', 'text' => 'لا، شكرًا']],
+            ],
+            [
+                'name' => 'payment_reminder', 'category' => TemplateCategory::Utility, 'status' => TemplateStatus::Approved,
+                'header_type' => TemplateHeader::None,
+                'body' => 'مرحبًا {{1}}، نذكّرك بأن فاتورة اشتراكك بمبلغ {{2}} ريال تستحق خلال ثلاثة أيام.',
+                'body_examples' => ['شركة الأفق', '4,500'], 'footer' => null,
+                'buttons' => [['type' => 'url', 'text' => 'ادفع الآن', 'url' => 'https://rizq.sa/pay/{{1}}', 'example' => 'INV-1024']],
+            ],
+            [
+                'name' => 'ramadan_offer', 'category' => TemplateCategory::Marketing, 'status' => TemplateStatus::Pending,
+                'header_type' => TemplateHeader::Image,
+                'body' => 'عرض رمضان يا {{1}}: خصم 20٪ على العمالة المنزلية حتى نهاية الشهر.',
+                'body_examples' => ['أحمد'], 'footer' => 'للإلغاء أرسل: إيقاف',
+                'buttons' => [['type' => 'phone', 'text' => 'اتصل بنا', 'phone' => '+966920000000']],
+            ],
+            [
+                'name' => 'win_back', 'category' => TemplateCategory::Utility, 'status' => TemplateStatus::Rejected,
+                'rejection_reason' => 'صياغة تسويقية في قالب خدمي',
+                'header_type' => TemplateHeader::None,
+                'body' => 'اشتقنا لك يا {{1}}! ارجع لرزق واحصل على أول شهر مجانًا.',
+                'body_examples' => ['خالد'], 'footer' => null, 'buttons' => null,
+            ],
+            [
+                'name' => 'interview_invite', 'category' => TemplateCategory::Utility, 'status' => TemplateStatus::Draft,
+                'header_type' => TemplateHeader::None,
+                'body' => 'مرحبًا {{1}}، تمت دعوتك لمقابلة عمل يوم {{2}} في مقر الشركة.',
+                'body_examples' => ['منى', 'الثلاثاء'], 'footer' => null, 'buttons' => null,
+            ],
+        ];
+
+        foreach ($templates as $template) {
+            Template::query()->create([
+                'language' => 'ar',
+                'created_by' => $supervisor->id,
+                'submitted_at' => $template['status'] === TemplateStatus::Draft ? null : now()->subDays(3),
+                'decided_at' => in_array($template['status'], [TemplateStatus::Approved, TemplateStatus::Rejected], true) ? now()->subDays(2) : null,
+                ...$template,
+            ]);
+        }
+    }
+
+    private function seedKnowledge(User $supervisor): void
+    {
+        $entries = [
+            ['كم مدة وصول العمالة بعد التعاقد؟', 'من أسبوعين إلى ستة أسابيع حسب المهنة والجنسية، ونبلغ العميل بكل مرحلة.', 'سياسة الاستقدام 2026', 20],
+            ['هل يمكن استبدال العامل إن لم يناسبني؟', 'نعم، مرة واحدة مجانًا خلال أول 90 يومًا من وصوله.', 'شروط العقد، البند 7', 45],
+            ['ما طرق الدفع المتاحة؟', 'مدى وبطاقات الائتمان والتحويل البنكي، والتقسيط على أربع دفعات عبر تابي.', 'صفحة الدفع في رزق', 130],
+            ['هل تشمل الباقة السكن والتأمين؟', 'تشمل التأمين الطبي دائمًا، والسكن في الباقة المتقدمة فقط.', 'جدول الباقات', 10],
+            ['كيف يرفع الباحث عن عمل سيرته الذاتية؟', 'من التطبيق: الملف الشخصي ثم السيرة الذاتية، بصيغة PDF وحجم أقل من 5 ميجا.', 'دليل التطبيق', 200],
+        ];
+
+        foreach ($entries as $position => [$question, $answer, $source, $daysAgo]) {
+            $entry = new KnowledgeEntry([
+                'question' => $question,
+                'answer' => $answer,
+                'source' => $source,
+                'active' => $position !== 4,
+            ]);
+            $entry->forceFill([
+                'created_by' => $supervisor->id,
+                'reviewed_by' => $supervisor->id,
+                'reviewed_at' => now()->subDays($daysAgo),
+            ])->save();
+        }
     }
 
     /**

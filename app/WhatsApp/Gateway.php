@@ -3,6 +3,7 @@
 namespace App\WhatsApp;
 
 use App\Models\Message;
+use App\Models\Template;
 
 /**
  * The one door messages leave the platform through.
@@ -19,4 +20,10 @@ interface Gateway
      * as status updates (UpdateMessageStatus), not from here.
      */
     public function send(Message $message): SendResult;
+
+    /**
+     * Hands a template to Meta for review. The verdict comes back later
+     * (RecordTemplateDecision), not from here.
+     */
+    public function submitTemplate(Template $template): SendResult;
 }

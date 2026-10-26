@@ -125,7 +125,12 @@ function ThreadBubble({
                   .filter(Boolean)
                   .join(' · ')
             : message.sender === 'agent'
-              ? (message.author ?? undefined)
+              ? [
+                    message.author,
+                    message.template && t('inbox.composer.template'),
+                ]
+                    .filter(Boolean)
+                    .join(' · ') || undefined
               : message.sender === 'bot'
                 ? t('inbox.sender.bot')
                 : message.sender === 'system'
@@ -232,10 +237,33 @@ function MessageContent({
                     {t('inbox.preview.location')}
                 </span>
             )}
+            {message.template?.header && (
+                <div dir="auto" className="mb-1 font-bold">
+                    {message.template.header}
+                </div>
+            )}
             {message.body && (
                 <div dir="auto" className={media ? 'mt-2' : undefined}>
                     {message.body}
                 </div>
+            )}
+            {message.template?.footer && (
+                <div dir="auto" className="mt-1 text-caption opacity-75">
+                    {message.template.footer}
+                </div>
+            )}
+            {message.template && message.template.buttons.length > 0 && (
+                <ul className="mt-2 flex flex-col gap-1 border-t border-current/20 pt-2">
+                    {message.template.buttons.map((text, position) => (
+                        <li
+                            key={position}
+                            dir="auto"
+                            className="text-center text-body-sm font-semibold opacity-90"
+                        >
+                            {text}
+                        </li>
+                    ))}
+                </ul>
             )}
         </>
     );

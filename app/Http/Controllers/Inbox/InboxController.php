@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Inbox;
 
 use App\Enums\ConversationStatus;
 use App\Enums\MessageDirection;
+use App\Enums\TemplateStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\QuickReply;
 use App\Models\Tag;
+use App\Models\Template;
 use App\Models\User;
 use App\Support\InboxPresenter;
+use App\Support\TemplatePresenter;
 use App\WhatsApp\Gateway;
 use App\WhatsApp\SimulatorGateway;
 use Illuminate\Database\Eloquent\Builder;
@@ -98,6 +102,23 @@ class InboxController extends Controller
                     'availability' => $member->availability->value,
                 ]),
             'tags' => Tag::query()->orderBy('name')->get(['id', 'name', 'color']),
+            // Left out of the poll: neither changes while a member is replying.
+            'quickReplies' => QuickReply::query()
+                ->availableTo($user)
+                ->orderBy('shortcut')
+                ->get(['id', 'user_id', 'shortcut', 'title', 'body'])
+                ->map(fn (QuickReply $reply): array => [
+                    'id' => $reply->id,
+                    'shortcut' => $reply->shortcut,
+                    'title' => $reply->title,
+                    'body' => $reply->body,
+                    'shared' => $reply->isShared(),
+                ]),
+            'templates' => Template::query()
+                ->where('status', TemplateStatus::Approved)
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Template $template): array => TemplatePresenter::present($template)),
             'pollSeconds' => (int) config('inbox.poll_seconds'),
             'longWaitMinutes' => (int) config('inbox.long_wait_minutes'),
             'simulator' => $user->can('manage-team') && app(Gateway::class) instanceof SimulatorGateway,

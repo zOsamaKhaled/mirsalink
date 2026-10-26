@@ -32,6 +32,7 @@ import type {
     SelectedConversation,
     ThreadItem,
 } from '@/types/inbox';
+import type { QuickReply, WhatsAppTemplate } from '@/types/templates';
 
 type Props = {
     tab: InboxTab;
@@ -44,6 +45,8 @@ type Props = {
     incoming: IncomingMessage[];
     members: InboxMember[];
     tags: InboxTag[];
+    quickReplies: QuickReply[];
+    templates: WhatsAppTemplate[];
     pollSeconds: number;
     longWaitMinutes: number;
     simulator: boolean;
@@ -128,6 +131,8 @@ export default function Inbox(props: Props) {
                             <Composer
                                 key={`composer-${selected.id}`}
                                 conversation={selected}
+                                quickReplies={props.quickReplies}
+                                templates={props.templates}
                             />
                         </>
                     ) : (

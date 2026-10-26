@@ -75,6 +75,12 @@ export type ThreadMessage = {
     } | null;
     status: DeliveryStatus | null;
     error: string | null;
+    template: {
+        name: string;
+        header: string | null;
+        footer: string | null;
+        buttons: string[];
+    } | null;
 };
 
 export type ThreadEvent = {
