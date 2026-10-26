@@ -34,7 +34,7 @@ class ImportContacts
      *
      * @var array<string, list<string>>
      */
-    private const array HEADINGS = [
+    public const array HEADINGS = [
         'phone' => ['phone', 'phonenumber', 'mobile', 'mobilenumber', 'whatsapp', 'whatsappnumber', 'number', 'contactphone', 'رقم', 'الرقم', 'الجوال', 'رقمالجوال', 'الهاتف', 'رقمالهاتف', 'واتساب', 'رقمالواتساب'],
         'name' => ['name', 'fullname', 'contactname', 'الاسم', 'الاسمالكامل', 'اسم'],
         'first_name' => ['firstname', 'givenname', 'الاسمالأول'],

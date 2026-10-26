@@ -19,3 +19,4 @@ require __DIR__.'/team.php';
 require __DIR__.'/contacts.php';
 require __DIR__.'/inbox.php';
 require __DIR__.'/templates.php';
+require __DIR__.'/broadcasts.php';

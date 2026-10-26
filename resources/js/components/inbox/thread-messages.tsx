@@ -134,7 +134,11 @@ function ThreadBubble({
               : message.sender === 'bot'
                 ? t('inbox.sender.bot')
                 : message.sender === 'system'
-                  ? t('inbox.sender.system')
+                  ? message.broadcast
+                      ? t('inbox.sender.broadcast', {
+                            name: message.broadcast,
+                        })
+                      : t('inbox.sender.system')
                   : undefined;
 
     const showStatus =

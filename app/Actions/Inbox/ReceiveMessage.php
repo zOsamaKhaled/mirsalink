@@ -2,6 +2,7 @@
 
 namespace App\Actions\Inbox;
 
+use App\Actions\Broadcasts\NoteCustomerReply;
 use App\Enums\ConversationEventType;
 use App\Enums\ConversationStatus;
 use App\Enums\MessageDirection;
@@ -31,6 +32,7 @@ class ReceiveMessage
     public function __construct(
         private RouteConversation $route,
         private SendAutoReply $autoReply,
+        private NoteCustomerReply $noteReply,
     ) {}
 
     public function handle(InboundMessage $inbound): Message
@@ -83,6 +85,8 @@ class ReceiveMessage
 
             return [$conversation, $message, $isNew || $wasClosed || $conversation->assigned_to === null];
         });
+
+        $this->noteReply->handle($conversation, $message);
 
         if ($needsRouting) {
             $this->assignOnArrival($conversation);

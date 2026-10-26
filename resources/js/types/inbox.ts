@@ -75,6 +75,7 @@ export type ThreadMessage = {
     } | null;
     status: DeliveryStatus | null;
     error: string | null;
+    broadcast: string | null;
     template: {
         name: string;
         header: string | null;

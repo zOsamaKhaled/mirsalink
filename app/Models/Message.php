@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property MessageType $type
  * @property int|null $template_id
  * @property array{body?: list<string>, header?: string|null, button?: string|null}|null $template_params
+ * @property int|null $broadcast_id
  * @property string|null $body
  * @property string|null $media_path
  * @property string|null $media_mime
@@ -68,6 +69,14 @@ class Message extends Model
     public function template(): BelongsTo
     {
         return $this->belongsTo(Template::class);
+    }
+
+    /**
+     * @return BelongsTo<Broadcast, $this>
+     */
+    public function broadcast(): BelongsTo
+    {
+        return $this->belongsTo(Broadcast::class);
     }
 
     /**

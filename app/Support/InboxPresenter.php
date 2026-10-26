@@ -87,7 +87,7 @@ class InboxPresenter
     public static function thread(Conversation $conversation): array
     {
         $messages = $conversation->messages()
-            ->with(['author:id,name', 'template'])
+            ->with(['author:id,name', 'template', 'broadcast:id,name'])
             ->latest('id')
             ->limit((int) config('inbox.thread_size'))
             ->get();
@@ -135,6 +135,7 @@ class InboxPresenter
             ],
             'status' => $message->status?->value,
             'error' => $message->error_message,
+            'broadcast' => $message->broadcast?->name,
             'template' => $message->template === null ? null : [
                 'name' => $message->template->name,
                 'header' => $message->template->header_type === TemplateHeader::Text
@@ -193,6 +194,7 @@ class InboxPresenter
                 : __('app.inbox.events.reopened', ['actor' => $actor]),
             ConversationEventType::HandedOver => __('app.inbox.events.handed_over', ['to' => $name('to')]),
             ConversationEventType::AutoReplied => __('app.inbox.events.auto_replied'),
+            ConversationEventType::OptedOut => __('app.inbox.events.opted_out'),
         };
     }
 

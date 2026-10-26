@@ -2,7 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Broadcasts\PrepareRecipients;
+use App\Actions\Broadcasts\SendBroadcastBatch;
+use App\Actions\Inbox\UpdateMessageStatus;
+use App\Enums\AudienceType;
 use App\Enums\Availability;
+use App\Enums\BroadcastStatus;
 use App\Enums\ConversationEventType;
 use App\Enums\ConversationStatus;
 use App\Enums\MessageDirection;
@@ -14,6 +19,7 @@ use App\Enums\TagColor;
 use App\Enums\TemplateCategory;
 use App\Enums\TemplateHeader;
 use App\Enums\TemplateStatus;
+use App\Models\Broadcast;
 use App\Models\Contact;
 use App\Models\Conversation;
 use App\Models\ConversationEvent;
@@ -76,6 +82,54 @@ class DatabaseSeeder extends Seeder
         $this->seedConversations();
         $this->seedRepliesAndTemplates($supervisor);
         $this->seedKnowledge($supervisor);
+        $this->seedBroadcasts($supervisor);
+    }
+
+    /**
+     * A payment reminder already sent to company owners, with some
+     * delivered and read, and a follow-up to everyone still a draft.
+     */
+    private function seedBroadcasts(User $supervisor): void
+    {
+        $owners = Tag::query()->where('name', 'صاحب شركة')->value('id');
+        $sent = Broadcast::query()->create([
+            'name' => 'تذكير الدفع، أكتوبر',
+            'template_id' => Template::query()->where('name', 'payment_reminder')->value('id'),
+            'audience_type' => AudienceType::Tags,
+            'audience_tags' => [$owners],
+            'variables' => [
+                'body' => [['source' => 'company', 'fallback' => 'عميلنا العزيز'], ['source' => 'text', 'value' => '4,500']],
+                'button' => ['source' => 'phone'],
+            ],
+            'status' => BroadcastStatus::Sending,
+            'started_at' => now()->subHours(3),
+            'created_by' => $supervisor->id,
+        ]);
+
+        app(PrepareRecipients::class)->handle($sent);
+        app(SendBroadcastBatch::class)->handle($sent, 1000);
+
+        $update = app(UpdateMessageStatus::class);
+
+        foreach ($sent->recipients()->with('message')->get() as $position => $recipient) {
+            if ($recipient->message?->external_id !== null && $position % 4 !== 3) {
+                $update->handle($recipient->message->external_id, $position % 2 === 0 ? MessageStatus::Read : MessageStatus::Delivered);
+            }
+        }
+
+        $draft = Broadcast::query()->create([
+            'name' => 'متابعة الطلبات المفتوحة',
+            'template_id' => Template::query()->where('name', 'order_follow_up')->value('id'),
+            'audience_type' => AudienceType::All,
+            'variables' => [
+                'header' => ['source' => 'text', 'value' => '2026-10'],
+                'body' => [['source' => 'name', 'fallback' => 'عميلنا'], ['source' => 'text', 'value' => 'الأحد']],
+            ],
+            'status' => BroadcastStatus::Draft,
+            'created_by' => $supervisor->id,
+        ]);
+
+        app(PrepareRecipients::class)->handle($draft);
     }
 
     /**
@@ -123,7 +177,7 @@ class DatabaseSeeder extends Seeder
                 'header_type' => TemplateHeader::Image,
                 'body' => 'عرض رمضان يا {{1}}: خصم 20٪ على العمالة المنزلية حتى نهاية الشهر.',
                 'body_examples' => ['أحمد'], 'footer' => 'للإلغاء أرسل: إيقاف',
-                'buttons' => [['type' => 'phone', 'text' => 'اتصل بنا', 'phone' => '+966920000000']],
+                'buttons' => [['type' => 'phone', 'text' => 'اتصل بنا', 'phone' => '+966920000000'], ['type' => 'quick_reply', 'text' => 'إيقاف']],
             ],
             [
                 'name' => 'win_back', 'category' => TemplateCategory::Utility, 'status' => TemplateStatus::Rejected,

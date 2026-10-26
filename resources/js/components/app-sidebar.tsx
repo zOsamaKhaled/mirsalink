@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useTranslations } from '@/hooks/use-translations';
 import { dashboard } from '@/routes';
+import { index as broadcasts } from '@/routes/broadcasts';
 import { index as contacts } from '@/routes/contacts';
 import { index as inbox } from '@/routes/inbox';
 import { index as knowledge } from '@/routes/knowledge';
@@ -57,7 +58,17 @@ export function AppSidebar() {
             icon: Contact,
             section: '/contacts',
         },
-        { title: t('nav.broadcasts'), href: '#', icon: Megaphone, soon: true },
+        // Campaigns are for supervisors.
+        ...(auth.can.manageTeam
+            ? [
+                  {
+                      title: t('nav.broadcasts'),
+                      href: broadcasts(),
+                      icon: Megaphone,
+                      section: '/broadcasts',
+                  },
+              ]
+            : []),
         {
             title: t('nav.templates'),
             href: templates(),

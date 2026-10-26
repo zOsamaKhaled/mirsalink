@@ -562,6 +562,29 @@ export default function TemplateFormPage({
                                         </Button>
                                     ),
                                 )}
+                                {form.data.category === 'marketing' && (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={() =>
+                                            form.setData('buttons', [
+                                                ...form.data.buttons,
+                                                {
+                                                    type: 'quick_reply',
+                                                    text:
+                                                        form.data.language ===
+                                                        'ar'
+                                                            ? 'إيقاف'
+                                                            : 'Stop',
+                                                },
+                                            ])
+                                        }
+                                    >
+                                        <Plus />
+                                        {t('templates.form.add_stop')}
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </Field>

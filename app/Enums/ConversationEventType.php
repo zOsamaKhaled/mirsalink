@@ -28,4 +28,7 @@ enum ConversationEventType: string
 
     /** The out-of-hours reply went out. */
     case AutoReplied = 'auto_replied';
+
+    /** The customer asked to stop broadcasts. */
+    case OptedOut = 'opted_out';
 }

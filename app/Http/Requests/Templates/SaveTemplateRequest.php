@@ -6,6 +6,7 @@ use App\Enums\TemplateCategory;
 use App\Enums\TemplateHeader;
 use App\Models\Template;
 use App\Support\PhoneNumber;
+use App\Support\StopWords;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -158,6 +159,13 @@ class SaveTemplateRequest extends FormRequest
     private function checkButtons(Validator $validator): void
     {
         $buttons = collect((array) $this->input('buttons'));
+
+        // A campaign must let the customer stop it in one tap.
+        $canStop = $buttons->contains(fn (array $button): bool => $button['type'] === 'quick_reply' && StopWords::matches($button['text']));
+
+        if ($this->input('category') === TemplateCategory::Marketing->value && ! $canStop) {
+            $validator->errors()->add('buttons', __('app.templates.rules.marketing_stop'));
+        }
 
         if ($buttons->where('type', 'url')->count() > 2 || $buttons->where('type', 'phone')->count() > 1) {
             $validator->errors()->add('buttons', __('app.templates.rules.button_limits'));
