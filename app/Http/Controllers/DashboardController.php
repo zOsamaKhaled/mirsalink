@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contact;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,6 +20,8 @@ class DashboardController extends Controller
         return Inertia::render('dashboard', [
             'setup' => [
                 'team' => User::query()->count() > 1,
+                'routing' => Tag::query()->exists(),
+                'contacts' => Contact::query()->exists(),
             ],
         ]);
     }

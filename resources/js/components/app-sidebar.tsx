@@ -25,6 +25,8 @@ import {
 } from '@/components/ui/sidebar';
 import { useTranslations } from '@/hooks/use-translations';
 import { dashboard } from '@/routes';
+import { index as contacts } from '@/routes/contacts';
+import { index as routing } from '@/routes/routing';
 import { index as teamMembers } from '@/routes/team/members';
 import type { NavItem } from '@/types';
 
@@ -41,7 +43,12 @@ export function AppSidebar() {
     const workspace: NavItem[] = [
         { title: t('nav.dashboard'), href: dashboard(), icon: LayoutGrid },
         { title: t('nav.inbox'), href: '#', icon: Inbox, soon: true },
-        { title: t('nav.contacts'), href: '#', icon: Contact, soon: true },
+        {
+            title: t('nav.contacts'),
+            href: contacts(),
+            icon: Contact,
+            section: '/contacts',
+        },
         { title: t('nav.broadcasts'), href: '#', icon: Megaphone, soon: true },
         { title: t('nav.templates'), href: '#', icon: FileText, soon: true },
         {
@@ -61,7 +68,7 @@ export function AppSidebar() {
             icon: Users,
             section: '/team',
         },
-        { title: t('nav.routing'), href: '#', icon: Tags, soon: true },
+        { title: t('nav.routing'), href: routing(), icon: Tags },
     ];
 
     return (

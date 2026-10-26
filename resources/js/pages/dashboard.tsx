@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
+import { create as importContacts } from '@/routes/contacts/import';
+import { index as routing } from '@/routes/routing';
 import { index as teamMembers } from '@/routes/team/members';
 
 /*
@@ -24,7 +26,11 @@ type SetupStep = {
     href?: ReturnType<typeof teamMembers>;
 };
 
-export default function Dashboard({ setup }: { setup: { team: boolean } }) {
+export default function Dashboard({
+    setup,
+}: {
+    setup: { team: boolean; routing: boolean; contacts: boolean };
+}) {
     const { auth } = usePage().props;
     const { t } = useTranslations();
     const firstName = auth.user.name.split(' ')[0];
@@ -36,8 +42,16 @@ export default function Dashboard({ setup }: { setup: { team: boolean } }) {
             done: setup.team,
             href: auth.can.manageTeam ? teamMembers() : undefined,
         },
-        { key: 'routing', done: false },
-        { key: 'contacts', done: false },
+        {
+            key: 'routing',
+            done: setup.routing,
+            href: auth.can.manageTeam ? routing() : undefined,
+        },
+        {
+            key: 'contacts',
+            done: setup.contacts,
+            href: auth.can.manageTeam ? importContacts() : undefined,
+        },
         { key: 'whatsapp', done: false },
     ];
 
