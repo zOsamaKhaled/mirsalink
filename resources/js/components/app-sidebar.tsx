@@ -8,6 +8,7 @@ import {
     Inbox,
     LayoutGrid,
     Megaphone,
+    MessageCircle,
     Tags,
     Users,
 } from 'lucide-react';
@@ -35,6 +36,7 @@ import { index as reports } from '@/routes/reports';
 import { index as routing } from '@/routes/routing';
 import { index as teamMembers } from '@/routes/team/members';
 import { index as templates } from '@/routes/templates';
+import { index as whatsapp } from '@/routes/whatsapp';
 import type { NavItem } from '@/types';
 
 /*
@@ -105,6 +107,12 @@ export function AppSidebar() {
             section: '/team',
         },
         { title: t('nav.routing'), href: routing(), icon: Tags },
+        {
+            title: t('nav.whatsapp'),
+            href: whatsapp(),
+            icon: MessageCircle,
+            section: '/whatsapp',
+        },
         {
             title: t('nav.assistant'),
             href: assistantPage(),

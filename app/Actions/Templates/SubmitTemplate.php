@@ -3,9 +3,9 @@
 namespace App\Actions\Templates;
 
 use App\Enums\TemplateStatus;
+use App\Exceptions\TemplateSubmissionFailed;
 use App\Models\Template;
 use App\WhatsApp\Gateway;
-use RuntimeException;
 
 /**
  * Sends a draft to Meta for review. Meta's verdict arrives later, through
@@ -24,7 +24,7 @@ class SubmitTemplate
         $result = $this->gateway->submitTemplate($template);
 
         if (! $result->accepted) {
-            throw new RuntimeException((string) $result->errorMessage);
+            throw new TemplateSubmissionFailed((string) $result->errorMessage);
         }
 
         $template->forceFill([

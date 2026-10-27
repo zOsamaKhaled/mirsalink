@@ -9,6 +9,7 @@ use App\Models\Tag;
 use App\Models\User;
 use App\Support\TeamReport;
 use App\Support\WorkingHours;
+use App\WhatsApp\CloudApi;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -51,6 +52,7 @@ class DashboardController extends Controller
                 'team' => User::query()->count() > 1,
                 'routing' => Tag::query()->exists(),
                 'contacts' => Contact::query()->exists(),
+                'whatsapp' => config('whatsapp.gateway') === 'cloud' && app(CloudApi::class)->configured(),
             ],
         ]);
     }

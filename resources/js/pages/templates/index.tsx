@@ -393,6 +393,8 @@ const STATUS_CLASSES: Record<TemplateStatus, string> = {
     pending: 'bg-warning-soft text-warning',
     approved: 'bg-success-soft text-success',
     rejected: 'bg-danger-soft text-danger',
+    paused: 'bg-warning-soft text-warning',
+    disabled: 'bg-danger-soft text-danger',
 };
 
 function TemplateStatusBadge({ status }: { status: TemplateStatus }) {

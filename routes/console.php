@@ -2,8 +2,10 @@
 
 use App\Actions\Assistant\EmbedKnowledgeEntry;
 use App\Actions\Broadcasts\RunBroadcasts;
+use App\Actions\WhatsApp\ProcessWebhookEvent;
 use App\Assistant\Brain;
 use App\Models\KnowledgeEntry;
+use App\Models\WebhookEvent;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -36,3 +38,19 @@ Artisan::command('mirsalink:embed-knowledge {--all : Embed again even entries th
 
     $this->info("Embedded {$done} of {$entries->count()} knowledge entries with {$model}.");
 })->purpose('Embed knowledge entries with the assistant\'s embedding model');
+
+Artisan::command('mirsalink:webhooks', function (ProcessWebhookEvent $process) {
+    $events = WebhookEvent::query()
+        ->whereNull('processed_at')
+        ->where('attempts', '<', WebhookEvent::MAX_ATTEMPTS)
+        ->where('created_at', '<=', now()->subMinute())
+        ->orderBy('id')
+        ->limit(200)
+        ->get();
+
+    $read = $events->filter(fn (WebhookEvent $event): bool => $process->handle($event))->count();
+
+    $this->info("Read {$read} of {$events->count()} waiting WhatsApp notifications.");
+})->purpose('Read again the WhatsApp notifications that failed the first time');
+
+Schedule::command('mirsalink:webhooks')->everyMinute()->withoutOverlapping();

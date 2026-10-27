@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Templates;
 
 use App\Actions\Templates\SaveTemplate;
 use App\Actions\Templates\SubmitTemplate;
+use App\Exceptions\TemplateSubmissionFailed;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Templates\SaveTemplateRequest;
 use App\Models\QuickReply;
@@ -85,7 +86,13 @@ class TemplateController extends Controller
 
     public function submit(Template $template, SubmitTemplate $submit): RedirectResponse
     {
-        $submit->handle($template);
+        try {
+            $submit->handle($template);
+        } catch (TemplateSubmissionFailed $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('app.templates.flash.submitted')]);
 

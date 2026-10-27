@@ -1,5 +1,6 @@
 <?php
 
+use App\WhatsApp\CloudGateway;
 use App\WhatsApp\SimulatorGateway;
 
 return [
@@ -11,7 +12,8 @@ return [
     |
     | Who carries messages to and from WhatsApp. "simulator" plays WhatsApp's
     | part inside the platform, with its own page for typing customer
-    | messages; "cloud" (phase 9) talks to Meta's WhatsApp Cloud API.
+    | messages; "cloud" talks to Meta's WhatsApp Cloud API with the keys
+    | below.
     |
     */
 
@@ -19,6 +21,30 @@ return [
 
     'gateways' => [
         'simulator' => SimulatorGateway::class,
+        'cloud' => CloudGateway::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Meta's WhatsApp Cloud API
+    |--------------------------------------------------------------------------
+    |
+    | From the Meta app and its system user. The token and the app secret
+    | live in .env on the server and nowhere else. The verify token is any
+    | long random text, typed the same here and in the app's webhook
+    | settings; the app secret checks that each notification came from Meta.
+    |
+    */
+
+    'cloud' => [
+        'graph_url' => env('WHATSAPP_GRAPH_URL', 'https://graph.facebook.com'),
+        'graph_version' => env('WHATSAPP_GRAPH_VERSION', 'v23.0'),
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'business_account_id' => env('WHATSAPP_BUSINESS_ACCOUNT_ID'),
+        'app_secret' => env('WHATSAPP_APP_SECRET'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
+        'timeout_seconds' => 20,
     ],
 
     /*

@@ -1,4 +1,10 @@
-export type TemplateStatus = 'draft' | 'pending' | 'approved' | 'rejected';
+export type TemplateStatus =
+    | 'draft'
+    | 'pending'
+    | 'approved'
+    | 'rejected'
+    | 'paused'
+    | 'disabled';
 
 export type TemplateCategory = 'marketing' | 'utility';
 

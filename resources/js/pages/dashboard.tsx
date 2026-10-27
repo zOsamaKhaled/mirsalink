@@ -15,6 +15,7 @@ import { index as inbox } from '@/routes/inbox';
 import { index as reports } from '@/routes/reports';
 import { index as routing } from '@/routes/routing';
 import { index as teamMembers } from '@/routes/team/members';
+import { index as whatsapp } from '@/routes/whatsapp';
 
 /*
  * Home: today's figures (the team's for a supervisor, their own for an
@@ -43,7 +44,12 @@ export default function Dashboard({
     setup,
 }: {
     stats: Stats;
-    setup: { team: boolean; routing: boolean; contacts: boolean };
+    setup: {
+        team: boolean;
+        routing: boolean;
+        contacts: boolean;
+        whatsapp: boolean;
+    };
 }) {
     const { auth } = usePage().props;
     const { t } = useTranslations();
@@ -68,7 +74,11 @@ export default function Dashboard({
             done: setup.contacts,
             href: auth.can.manageTeam ? importContacts() : undefined,
         },
-        { key: 'whatsapp', done: false },
+        {
+            key: 'whatsapp',
+            done: setup.whatsapp,
+            href: auth.can.manageTeam ? whatsapp() : undefined,
+        },
     ];
 
     setLayoutProps({

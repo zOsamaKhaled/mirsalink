@@ -317,7 +317,7 @@ class BroadcastController extends Controller
     {
         return [
             'per_minute' => (int) config('broadcasts.per_minute'),
-            'daily_limit' => (int) config('broadcasts.daily_limit'),
+            'daily_limit' => min(BroadcastQuota::dailyLimit(), 9_999_999),
             'remaining_today' => BroadcastQuota::remainingToday(),
         ];
     }
