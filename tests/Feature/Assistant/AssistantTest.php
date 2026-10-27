@@ -23,6 +23,7 @@ use App\Models\Message;
 use App\Models\RoutingRule;
 use App\Models\Tag;
 use App\Models\User;
+use App\Support\Migration;
 use App\WhatsApp\InboundMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -286,12 +287,18 @@ class AssistantTest extends TestCase
 
         $this->actingAs($agent)->get(route('assistant.index'))->assertForbidden();
 
-        $this->actingAs($supervisor)->put(route('assistant.update'), [
+        $live = [
             'mode' => 'live',
             'greeting' => 'أهلًا بك',
             'out_of_scope_reply' => 'أساعدك في خدمات رزق فقط.',
             'handover_reply' => '',
-        ])->assertInertiaFlash('toast.type', 'success');
+        ];
+
+        // While Respond.io's bot still answers on the number, ours may only listen.
+        $this->actingAs($supervisor)->put(route('assistant.update'), $live)->assertSessionHasErrors('mode');
+
+        Migration::update(['respond_io_bot_active' => false]);
+        $this->actingAs($supervisor)->put(route('assistant.update'), $live)->assertInertiaFlash('toast.type', 'success');
         $this->assertTrue(AssistantSettings::current()->isLive());
 
         $this->actingAs($supervisor)

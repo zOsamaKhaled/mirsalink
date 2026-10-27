@@ -7,6 +7,7 @@ import {
     FileText,
     Inbox,
     LayoutGrid,
+    ListChecks,
     Megaphone,
     MessageCircle,
     Tags,
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useTranslations } from '@/hooks/use-translations';
 import { dashboard } from '@/routes';
+import { index as migration } from '@/routes/migration';
 import { index as assistantPage } from '@/routes/assistant';
 import { index as broadcasts } from '@/routes/broadcasts';
 import { index as contacts } from '@/routes/contacts';
@@ -112,6 +114,12 @@ export function AppSidebar() {
             href: whatsapp(),
             icon: MessageCircle,
             section: '/whatsapp',
+        },
+        {
+            title: t('nav.migration'),
+            href: migration(),
+            icon: ListChecks,
+            section: '/migration',
         },
         {
             title: t('nav.assistant'),

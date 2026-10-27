@@ -7,6 +7,7 @@ use App\Assistant\AssistantReport;
 use App\Assistant\AssistantSettings;
 use App\Assistant\Brain;
 use App\Models\KnowledgeEntry;
+use App\Support\Migration;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -51,17 +52,25 @@ class AssistantController extends Controller
                 'shadow' => AssistantReport::summary('shadow', now()->subDays(7), now()),
             ],
             'runs' => AssistantReport::recent(),
+            'respondIoBotActive' => Migration::current()->respondIoBotActive,
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'mode' => ['required', Rule::in([AssistantSettings::OFF, AssistantSettings::SHADOW, AssistantSettings::LIVE])],
+            'mode' => [
+                'required',
+                Rule::in([AssistantSettings::OFF, AssistantSettings::SHADOW, AssistantSettings::LIVE]),
+                Rule::notIn(Migration::current()->respondIoBotActive ? [AssistantSettings::LIVE] : []),
+            ],
             'greeting' => ['required', 'string', 'max:1000'],
             'out_of_scope_reply' => ['required', 'string', 'max:1000'],
             'handover_reply' => ['nullable', 'string', 'max:1000'],
-        ], [], [
+        ], [
+            // Two assistants on one number would answer the same customer twice.
+            'mode.not_in' => __('app.migration.rules.two_assistants'),
+        ], [
             'greeting' => __('app.assistant.replies.greeting'),
             'out_of_scope_reply' => __('app.assistant.replies.out_of_scope'),
             'handover_reply' => __('app.assistant.replies.handover'),

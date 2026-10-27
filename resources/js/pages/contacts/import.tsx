@@ -18,6 +18,8 @@ type ImportResult = {
     skipped: { line: number; reason: 'no_phone' | 'bad_phone' }[];
     skipped_count: number;
     tags_created: number;
+    owners: number;
+    unknown_owners: string[];
     missing_phone_column: boolean;
 };
 
@@ -192,6 +194,16 @@ function ResultPanel({ result }: { result: ImportResult }) {
             value: result.tags_created,
             tone: 'text-muted-foreground',
         },
+        // Only when the file named each customer's member (Respond.io's assignee).
+        ...(result.owners > 0 || result.unknown_owners.length > 0
+            ? [
+                  {
+                      label: t('contacts.import.owners'),
+                      value: result.owners,
+                      tone: 'text-success',
+                  },
+              ]
+            : []),
     ];
 
     return (
@@ -219,6 +231,15 @@ function ResultPanel({ result }: { result: ImportResult }) {
                     </div>
                 ))}
             </dl>
+
+            {result.unknown_owners.length > 0 && (
+                <p className="flex items-start gap-2 rounded-xl bg-warning-soft p-3 text-body-sm text-warning">
+                    <CircleAlert className="mt-0.5 size-4 shrink-0" />
+                    {t('contacts.import.unknown_owners', {
+                        names: result.unknown_owners.join('، '),
+                    })}
+                </p>
+            )}
 
             {result.skipped.length > 0 && (
                 <div className="flex flex-col gap-2">

@@ -2,7 +2,9 @@
 
 namespace App\Actions\Contacts;
 
+use App\Enums\ConversationStatus;
 use App\Models\Contact;
+use App\Models\Conversation;
 use App\Models\Tag;
 use App\Models\User;
 use App\Support\PhoneNumber;
@@ -21,6 +23,11 @@ use SplFileObject;
  * fields are filled and its tags added to, but nothing a person typed is
  * overwritten. Rows without a usable number are skipped and reported by
  * line, so the file can be fixed and imported again.
+ *
+ * An assignee column (a member's email or name, as Respond.io exports it)
+ * keeps each customer with their member through the move: a customer the
+ * platform has no conversation with gets a closed one owned by that
+ * member, so their first message goes back to them.
  */
 class ImportContacts
 {
@@ -42,19 +49,26 @@ class ImportContacts
         'email' => ['email', 'emailaddress', 'mail', 'البريد', 'البريدالإلكتروني', 'الإيميل'],
         'company' => ['company', 'companyname', 'organization', 'organisation', 'الشركة', 'اسمالشركة', 'المؤسسة'],
         'tags' => ['tags', 'tag', 'labels', 'label', 'الوسوم', 'وسوم', 'الوسم'],
+        'assignee' => ['assignee', 'assignedto', 'assigneeemail', 'assigneename', 'owner', 'contactowner', 'المسؤول', 'الموظف', 'الموظفالمسؤول'],
     ];
 
     /** @var array<string, int> */
     private array $tagIds = [];
 
+    /** @var array<string, int> members by lower-case email and by name */
+    private array $members = [];
+
     /**
-     * @return array{created: int, updated: int, skipped: list<array{line: int, reason: string}>, skipped_count: int, tags_created: int, missing_phone_column: bool}
+     * @return array{created: int, updated: int, skipped: list<array{line: int, reason: string}>, skipped_count: int, tags_created: int, owners: int, unknown_owners: list<string>, missing_phone_column: bool}
      */
     public function handle(string $path, ?User $actor = null): array
     {
-        $result = ['created' => 0, 'updated' => 0, 'skipped' => [], 'skipped_count' => 0, 'tags_created' => 0, 'missing_phone_column' => false];
+        $result = ['created' => 0, 'updated' => 0, 'skipped' => [], 'skipped_count' => 0, 'tags_created' => 0, 'owners' => 0, 'unknown_owners' => [], 'missing_phone_column' => false];
         $tagsBefore = Tag::query()->count();
         $this->tagIds = Tag::query()->pluck('id', 'name')->all();
+        $this->members = User::query()->whereNull('deactivated_at')->get(['id', 'name', 'email'])
+            ->flatMap(fn (User $member): array => [mb_strtolower($member->email) => $member->id, mb_strtolower($member->name) => $member->id])
+            ->all();
 
         $file = new SplFileObject($path);
         $header = $this->readLine($file);
@@ -101,7 +115,7 @@ class ImportContacts
     /**
      * @param  array<int, list<string|null>>  $rows
      * @param  array<string, int>  $columns
-     * @param  array{created: int, updated: int, skipped: list<array{line: int, reason: string}>, skipped_count: int, tags_created: int, missing_phone_column: bool}  $result
+     * @param  array{created: int, updated: int, skipped: list<array{line: int, reason: string}>, skipped_count: int, tags_created: int, owners: int, unknown_owners: list<string>, missing_phone_column: bool}  $result
      */
     private function importChunk(array $rows, array $columns, ?User $actor, array &$result): void
     {
@@ -154,6 +168,8 @@ class ImportContacts
                     $attached = $contact->tags()->syncWithoutDetaching($tagIds)['attached'];
                     $wasDirty = $wasDirty || $attached !== [];
                 }
+
+                $this->keepWithOwner($contact, $this->cell($cells, $columns, 'assignee'), $result);
 
                 if ($isNew) {
                     $result['created']++;
@@ -227,6 +243,38 @@ class ImportContacts
     }
 
     /**
+     * @param  array{created: int, updated: int, skipped: list<array{line: int, reason: string}>, skipped_count: int, tags_created: int, owners: int, unknown_owners: list<string>, missing_phone_column: bool}  $result
+     */
+    private function keepWithOwner(Contact $contact, ?string $owner, array &$result): void
+    {
+        if ($owner === null) {
+            return;
+        }
+
+        $memberId = $this->members[mb_strtolower(trim($owner))] ?? null;
+
+        if ($memberId === null) {
+            if (count($result['unknown_owners']) < 10 && ! in_array($owner, $result['unknown_owners'], true)) {
+                $result['unknown_owners'][] = mb_substr($owner, 0, 100);
+            }
+
+            return;
+        }
+
+        if (Conversation::query()->where('contact_id', $contact->id)->exists()) {
+            return;
+        }
+
+        Conversation::query()->create([
+            'contact_id' => $contact->id,
+            'assigned_to' => $memberId,
+            'status' => ConversationStatus::Closed,
+            'closed_at' => now(),
+        ]);
+        $result['owners']++;
+    }
+
+    /**
      * @return list<int>
      */
     private function tagIds(?string $cell): array
@@ -251,7 +299,7 @@ class ImportContacts
     }
 
     /**
-     * @param  array{created: int, updated: int, skipped: list<array{line: int, reason: string}>, skipped_count: int, tags_created: int, missing_phone_column: bool}  $result
+     * @param  array{created: int, updated: int, skipped: list<array{line: int, reason: string}>, skipped_count: int, tags_created: int, owners: int, unknown_owners: list<string>, missing_phone_column: bool}  $result
      */
     private function skip(array &$result, int $line, string $reason): void
     {

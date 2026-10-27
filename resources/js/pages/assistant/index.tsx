@@ -86,6 +86,7 @@ type Props = {
     knowledge: { active: number; embedded: number | null };
     summary: { live: Summary; shadow: Summary };
     runs: Run[];
+    respondIoBotActive: boolean;
 };
 
 const MODES: Mode[] = ['off', 'shadow', 'live'];
@@ -96,6 +97,7 @@ export default function Assistant({
     knowledge,
     summary,
     runs,
+    respondIoBotActive,
 }: Props) {
     const { t } = useTranslations();
 
@@ -125,18 +127,28 @@ export default function Assistant({
                     </p>
                 </header>
 
+                {respondIoBotActive && (
+                    <p className="rounded-xl bg-warning-soft px-4 py-3 text-body-sm text-warning">
+                        {t('assistant.respond_io_note')}
+                    </p>
+                )}
+
                 <section
                     className="grid gap-3 md:grid-cols-3"
                     aria-label={t('assistant.mode.label')}
                 >
                     {MODES.map((mode) => {
                         const active = settings.mode === mode;
+                        // Two assistants on one number would answer twice.
+                        const blocked =
+                            mode === 'live' && respondIoBotActive && !active;
 
                         return (
                             <button
                                 key={mode}
                                 type="button"
                                 aria-pressed={active}
+                                disabled={blocked}
                                 onClick={() => !active && switchTo(mode)}
                                 className={cn(
                                     'flex flex-col gap-1.5 rounded-2xl border p-4 text-start transition-colors',
@@ -144,7 +156,7 @@ export default function Assistant({
                                         ? mode === 'off'
                                             ? 'border-danger/40 bg-danger-soft'
                                             : 'border-primary bg-accent ring-2 ring-primary/30 dark:border-tag-blue-foreground'
-                                        : 'bg-card hover:bg-accent/50',
+                                        : 'bg-card hover:bg-accent/50 disabled:pointer-events-none disabled:opacity-50',
                                 )}
                             >
                                 <span className="flex items-center gap-2 font-bold">

@@ -61,6 +61,7 @@ return [
         'routing' => 'Tags and routing',
         'assistant' => 'Assistant',
         'whatsapp' => 'WhatsApp',
+        'migration' => 'Moving',
         'toggle_sidebar' => 'Show or hide the menu',
         'breadcrumbs' => 'Page path',
     ],
@@ -451,6 +452,8 @@ return [
             'updated' => 'Updated',
             'skipped' => 'Skipped',
             'tags_created' => 'New tags',
+            'owners' => 'Customers kept with their member',
+            'unknown_owners' => 'These assignees aren’t on the team, so their customers have no member yet: :names. Add them with the same email, then import again.',
             'skipped_title' => 'Rows we didn’t import',
             'skipped_more' => 'And :count more rows.',
             'line' => 'Row :line',
@@ -1247,6 +1250,7 @@ return [
             'handover_hint' => 'Sent before a member takes over. Leave it empty to send nothing.',
         ],
         'save' => 'Save',
+        'respond_io_note' => 'Respond.io’s bot still answers on the number according to the Moving page, so our assistant stays silent until it is stopped.',
         'trial' => [
             'title' => 'Try a message',
             'hint' => 'Write as a customer and see what the assistant would do. Nothing is sent and no conversation changes.',
@@ -1411,6 +1415,106 @@ return [
         'flash' => [
             'retried' => ':read of :total notifications read.',
             'synced' => ':count templates changed status according to Meta.',
+        ],
+    ],
+
+    'migration' => [
+        'title' => 'Moving from Respond.io',
+        'description' => 'The three weeks’ steps, and the conditions for cancelling Respond.io measured from the team’s last two weeks of work.',
+        'respond_io' => [
+            'title' => 'Respond.io bot',
+            'label' => 'Respond.io’s bot still answers customers',
+            'hint' => 'While it does, our assistant stays silent: two assistants on one number answer the same customer twice.',
+        ],
+        'baseline' => [
+            'label' => 'First-reply time on Respond.io (minutes)',
+            'hint' => 'From Respond.io’s reports for the last month before the move, to compare against.',
+        ],
+        'save' => 'Save',
+        'steps' => [
+            'title' => 'Steps',
+            'done_on' => 'Done :date',
+            'mark' => 'Done',
+            'unmark' => 'Undo',
+            'import_contacts' => [
+                'title' => 'Move contacts and their tags',
+                'body' => 'Export contacts from Respond.io and import them from Contacts. The Assignee column keeps each customer with their member.',
+            ],
+            'connect_number' => [
+                'title' => 'Connect the real number',
+                'body' => 'The keys in .env and the webhook address in Meta, from the WhatsApp page. If the account belongs to Respond.io, move the number first.',
+            ],
+            'both_receive' => [
+                'title' => 'Trial 2: do messages reach both platforms?',
+                'body' => 'Send messages from a phone to the number and check they show here and in Respond.io alike.',
+            ],
+            'week_one' => [
+                'title' => 'Week one',
+                'body' => 'One member on our inbox, the assistant silent.',
+            ],
+            'week_two' => [
+                'title' => 'Week two',
+                'body' => 'The whole team here, the assistant tagging and routing, Respond.io’s bot stopped.',
+            ],
+            'week_three' => [
+                'title' => 'Week three',
+                'body' => 'Our assistant answers customers.',
+            ],
+            'cancel' => [
+                'title' => 'Cancel Respond.io',
+                'body' => 'Once every condition has held for two weeks in a row.',
+            ],
+        ],
+        'criteria' => [
+            'title' => 'Conditions for cancelling Respond.io',
+            'hint' => 'Measured over the last :days days; all must hold for two weeks in a row before cancelling.',
+            'ready' => 'Every condition held over the last :days days.',
+            'progress' => 'Met: :count of 6',
+            'statuses' => [
+                'met' => 'Met',
+                'not_met' => 'Not met',
+                'gathering' => 'Gathering data',
+                'manual' => 'Waiting for a supervisor',
+            ],
+            'nothing_lost' => [
+                'title' => 'No incoming message lost',
+                'body' => 'Every notification from Meta was read.',
+                'value' => 'Unread: :value',
+            ],
+            'receiving' => [
+                'title' => 'Receiving never stopped for more than :minutes minutes',
+                'body' => 'The longest a customer’s message took from Meta to here; Meta resends while the platform doesn’t answer.',
+                'value' => 'Longest delay: :value',
+            ],
+            'agreement' => [
+                'title' => 'The assistant’s tags match the team’s in at least :target%',
+                'body' => 'At least :min conversations reviewed by the team are needed to judge it.',
+                'value' => 'Match · conversations: :value',
+            ],
+            'prices' => [
+                'title' => 'The assistant never gave a wrong price or condition',
+                'body' => 'The number check stops anything not in the knowledge base; a supervisor still reads its latest answers on the Assistant page and confirms.',
+                'confirm' => 'I read its answers and found no mistake',
+                'value' => 'Last review: :value',
+            ],
+            'whole_team' => [
+                'title' => 'The whole team works from our inbox',
+                'body' => 'Every agent answered customers from here this week.',
+                'value' => 'Agents: :value',
+            ],
+            'reply_time' => [
+                'title' => 'First-reply time no worse than on Respond.io',
+                'body' => 'The median reply time here against the figure from Respond.io below.',
+                'value' => 'Median here: :value',
+            ],
+        ],
+        'rules' => [
+            'two_assistants' => 'Respond.io’s bot still answers on this number; stop it and record that on the Moving page before our assistant answers customers.',
+        ],
+        'flash' => [
+            'saved' => 'Saved.',
+            'assistant_silenced' => 'Saved, and our assistant is silent again while Respond.io’s bot answers.',
+            'prices_checked' => 'Your review is recorded for today.',
         ],
     ],
 
