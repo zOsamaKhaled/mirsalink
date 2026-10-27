@@ -117,3 +117,34 @@ export function formatFileSize(bytes: number): string {
 
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+/**
+ * A length of time in its two largest units, such as 45 s, 12 m, 1 h 05 m
+ * or 2 d 3 h; the unit letters come from the member's language.
+ */
+export function formatDuration(
+    seconds: number,
+    units: { s: string; m: string; h: string; d: string },
+): string {
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) {
+        return `${Math.max(0, Math.round(seconds))} ${units.s}`;
+    }
+
+    if (minutes < 60) {
+        return `${minutes} ${units.m}`;
+    }
+
+    if (hours < 24) {
+        return minutes % 60 === 0
+            ? `${hours} ${units.h}`
+            : `${hours} ${units.h} ${String(minutes % 60).padStart(2, '0')} ${units.m}`;
+    }
+
+    return hours % 24 === 0
+        ? `${days} ${units.d}`
+        : `${days} ${units.d} ${hours % 24} ${units.h}`;
+}

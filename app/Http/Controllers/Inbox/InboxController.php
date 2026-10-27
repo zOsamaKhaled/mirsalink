@@ -65,6 +65,8 @@ class InboxController extends Controller
         $filters = [
             'q' => $request->string('q')->trim()->toString(),
             'tag' => $request->integer('tag') ?: null,
+            // Supervisors can look at one member's conversations.
+            'member' => $user->isSupervisor() ? ($request->integer('member') ?: null) : null,
         ];
 
         $conversations = $this->tab(Conversation::query()->visibleTo($user), $tab, $user)
@@ -73,6 +75,7 @@ class InboxController extends Controller
                 ->whereHas('contact', fn (Builder $contacts) => $contacts->search($filters['q'])))
             ->when($filters['tag'], fn (Builder $query, int $tag) => $query
                 ->whereHas('tags', fn (Builder $tags) => $tags->whereKey($tag)))
+            ->when($filters['member'], fn (Builder $query, int $member) => $query->where('assigned_to', $member))
             ->limit((int) config('inbox.list_size'))
             ->get()
             ->map(fn (Conversation $conversation): array => InboxPresenter::listItem($conversation));

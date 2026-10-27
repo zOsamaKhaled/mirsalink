@@ -1,4 +1,11 @@
-import { Head, Link, router, setLayoutProps, usePoll } from '@inertiajs/react';
+import {
+    Head,
+    Link,
+    router,
+    setLayoutProps,
+    usePage,
+    usePoll,
+} from '@inertiajs/react';
 import { CircleCheck, Info, MessagesSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -57,6 +64,7 @@ const WIDE = '(min-width: 1280px)';
 export default function Inbox(props: Props) {
     const { tab, filters, selected } = props;
     const { t } = useTranslations();
+    const { auth } = usePage().props;
     const notifications = useInboxNotifications(
         props.incoming,
         selected?.id ?? null,
@@ -99,6 +107,7 @@ export default function Inbox(props: Props) {
                     selectedId={selected?.id ?? null}
                     tags={props.tags}
                     longWaitMinutes={props.longWaitMinutes}
+                    members={auth.can.manageTeam ? props.members : undefined}
                     simulator={props.simulator}
                     notifications={notifications}
                     className={cn(

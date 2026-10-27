@@ -6,18 +6,21 @@ import { ForwardArrow } from '@/components/direction-icons';
 import { HandoverMark } from '@/components/inbox/handover-mark';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useDuration } from '@/hooks/use-duration';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { create as importContacts } from '@/routes/contacts/import';
+import { index as inbox } from '@/routes/inbox';
+import { index as reports } from '@/routes/reports';
 import { index as routing } from '@/routes/routing';
 import { index as teamMembers } from '@/routes/team/members';
 
 /*
- * Home before there is anything to count: the figures the inbox will fill
- * in, shown empty rather than as made-up zeros, and the setup steps in the
- * order the platform is being built. A step a supervisor can take now
- * links to its page; the rest say "Soon" until their phase lands.
+ * Home: today's figures (the team's for a supervisor, their own for an
+ * agent), shown empty rather than as made-up zeros until the first
+ * conversation, and the setup steps in the order the platform is built. A
+ * step a supervisor can take now links to its page; the rest say "Soon".
  */
 
 type SetupStep = {
@@ -26,13 +29,26 @@ type SetupStep = {
     href?: ReturnType<typeof teamMembers>;
 };
 
+type Stats = {
+    open: number;
+    waiting: number;
+    reply: number | null;
+    closed: number;
+    mine: boolean;
+    started: boolean;
+};
+
 export default function Dashboard({
+    stats,
     setup,
 }: {
+    stats: Stats;
     setup: { team: boolean; routing: boolean; contacts: boolean };
 }) {
     const { auth } = usePage().props;
     const { t } = useTranslations();
+    const duration = useDuration();
+    const shown = (value: string) => (stats.started ? value : null);
     const firstName = auth.user.name.split(' ')[0];
 
     const steps: SetupStep[] = [
@@ -77,24 +93,54 @@ export default function Dashboard({
                     <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
                         <StatTile
                             icon={<Inbox className="size-4" />}
-                            label={t('dashboard.stats.open')}
+                            label={t(
+                                stats.mine
+                                    ? 'dashboard.stats.open_mine'
+                                    : 'dashboard.stats.open',
+                            )}
+                            value={shown(String(stats.open))}
+                            href={inbox()}
                         />
                         <StatTile
                             icon={<HandoverMark className="size-4" />}
                             label={t('dashboard.stats.waiting')}
+                            value={shown(String(stats.waiting))}
+                            href={inbox({ query: { tab: 'unassigned' } })}
                         />
                         <StatTile
                             icon={<Clock3 className="size-4" />}
-                            label={t('dashboard.stats.first_response')}
+                            label={t(
+                                stats.mine
+                                    ? 'dashboard.stats.reply_mine'
+                                    : 'dashboard.stats.reply',
+                            )}
+                            value={shown(duration(stats.reply))}
                         />
                         <StatTile
                             icon={<CircleCheckBig className="size-4" />}
-                            label={t('dashboard.stats.closed_today')}
+                            label={t(
+                                stats.mine
+                                    ? 'dashboard.stats.closed_mine'
+                                    : 'dashboard.stats.closed_today',
+                            )}
+                            value={shown(String(stats.closed))}
                         />
                     </div>
-                    <p className="text-caption text-muted-foreground">
-                        {t('dashboard.stats.empty')}
-                    </p>
+                    {stats.started ? (
+                        auth.can.manageTeam && (
+                            <Link
+                                href={reports()}
+                                className="inline-flex items-center gap-1.5 self-start text-body-sm font-semibold text-primary hover:underline dark:text-tag-blue-foreground"
+                            >
+                                {t('dashboard.stats.reports')}
+                                <ForwardArrow className="size-4" />
+                            </Link>
+                        )
+                    ) : (
+                        <p className="text-caption text-muted-foreground">
+                            {t('dashboard.stats.empty')}
+                        </p>
+                    )}
                 </section>
 
                 {/* Setting the platform up is the supervisors' job. */}
@@ -178,19 +224,49 @@ export default function Dashboard({
     );
 }
 
-function StatTile({ icon, label }: { icon: ReactNode; label: string }) {
-    return (
-        <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+function StatTile({
+    icon,
+    label,
+    value,
+    href,
+}: {
+    icon: ReactNode;
+    label: string;
+    /** Null before there is anything to count. */
+    value: string | null;
+    href?: ReturnType<typeof inbox>;
+}) {
+    const content = (
+        <>
             <span className="flex items-center gap-2 text-body-sm text-muted-foreground">
                 {icon}
                 {label}
             </span>
-            <span
-                className="text-display leading-none font-extrabold text-muted-foreground/50"
-                aria-hidden
-            >
-                —
-            </span>
-        </div>
+            {value === null ? (
+                <span
+                    className="text-display leading-none font-extrabold text-muted-foreground/50"
+                    aria-hidden
+                >
+                    —
+                </span>
+            ) : (
+                <span className="text-display leading-none font-extrabold tabular">
+                    {value}
+                </span>
+            )}
+        </>
+    );
+
+    const tile = 'flex flex-col gap-3 rounded-xl border bg-card p-4';
+
+    return href && value !== null ? (
+        <Link
+            href={href}
+            className={cn(tile, 'transition-colors hover:bg-accent/50')}
+        >
+            {content}
+        </Link>
+    ) : (
+        <div className={tile}>{content}</div>
     );
 }

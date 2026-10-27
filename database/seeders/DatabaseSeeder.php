@@ -80,6 +80,7 @@ class DatabaseSeeder extends Seeder
         $this->seedTagsAndRouting();
         $this->seedContacts();
         $this->seedConversations();
+        $this->seedHistory();
         $this->seedRepliesAndTemplates($supervisor);
         $this->seedKnowledge($supervisor);
         $this->seedBroadcasts($supervisor);
@@ -203,6 +204,88 @@ class DatabaseSeeder extends Seeder
                 ...$template,
             ]);
         }
+    }
+
+    /**
+     * Two weeks of finished conversations, so the reports have something to
+     * show: customers write mostly in working hours, each member answers at
+     * their own pace, and closes once the question is settled. The same
+     * seed gives the same history every time.
+     */
+    private function seedHistory(): void
+    {
+        mt_srand(2026);
+
+        $members = User::query()
+            ->whereIn('email', ['sara@mirsalink.test', 'khalid@mirsalink.test', 'noura@mirsalink.test', 'fahad@mirsalink.test'])
+            ->orderBy('id')
+            ->get()
+            ->values();
+        $pace = [8, 20, 12, 45];
+        $tagIds = Tag::query()->orderBy('id')->pluck('id')->all();
+        $hours = [8, 9, 10, 10, 11, 11, 11, 12, 12, 13, 14, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+        $questions = ['كم سعر الباقة الشهرية؟', 'متى يصل العامل بعد التعاقد؟', 'نسيت كلمة المرور ولا أستطيع الدخول', 'هل يمكن الدفع بالتقسيط؟', 'أبغى أضيف فرع ثاني لشركتي', 'التطبيق لا يقبل السيرة الذاتية'];
+        $answers = ['أهلًا بك، أرسل لك التفاصيل الآن.', 'تم، راجعت طلبك وهو جاهز.', 'أرسلت لك رابطًا لإعادة التعيين.', 'نعم، على أربع دفعات عبر تابي.'];
+
+        $contacts = Contact::query()->whereDoesntHave('conversation')->whereNull('opted_out_at')->orderBy('id')->limit(30)->get();
+
+        foreach ($contacts as $contact) {
+            $who = mt_rand(0, $members->count() - 1);
+            $member = $members[$who];
+            $conversation = Conversation::query()->create(['contact_id' => $contact->id, 'assigned_to' => $member->id, 'status' => ConversationStatus::Closed]);
+            $conversation->tags()->attach($tagIds[mt_rand(0, count($tagIds) - 1)]);
+
+            $days = collect(range(1, 13))->shuffle(mt_rand())->take(mt_rand(1, 2))->sortDesc()->values();
+            $at = null;
+
+            foreach ($days as $session => $daysAgo) {
+                $at = now('Asia/Riyadh')->subDays($daysAgo)->setTime($hours[mt_rand(0, count($hours) - 1)], mt_rand(0, 59))->utc();
+
+                if ($session > 0) {
+                    ConversationEvent::query()->create(['conversation_id' => $conversation->id, 'type' => ConversationEventType::Reopened, 'created_at' => $at]);
+                }
+
+                $write = function (string $direction, string $body) use ($conversation, $member, &$at): void {
+                    $conversation->messages()->create([
+                        'direction' => $direction === 'in' ? MessageDirection::Inbound : MessageDirection::Outbound,
+                        'sender' => $direction === 'in' ? MessageSender::Contact : MessageSender::Agent,
+                        'user_id' => $direction === 'in' ? null : $member->id,
+                        'type' => MessageType::Text,
+                        'body' => $body,
+                        'status' => $direction === 'in' ? null : MessageStatus::Read,
+                        'created_at' => $at,
+                        'updated_at' => $at,
+                    ]);
+                };
+
+                $write('in', $questions[mt_rand(0, count($questions) - 1)]);
+                $at = $at->addMinutes(mt_rand(1, $pace[$who] * 2));
+                $write('out', $answers[mt_rand(0, count($answers) - 1)]);
+
+                if (mt_rand(0, 1) === 1) {
+                    $at = $at->addMinutes(mt_rand(3, 30));
+                    $write('in', 'تمام، شكرًا');
+                    $at = $at->addMinutes(mt_rand(1, $pace[$who]));
+                    $write('out', 'العفو، في الخدمة.');
+                }
+
+                $at = $at->addMinutes(mt_rand(5, 120));
+                ConversationEvent::query()->create(['conversation_id' => $conversation->id, 'type' => ConversationEventType::Closed, 'actor_id' => $member->id, 'created_at' => $at]);
+            }
+
+            $last = $conversation->messages()->latest('id')->first();
+            $conversation->forceFill([
+                'created_at' => $conversation->messages()->oldest('id')->value('created_at'),
+                'last_message_at' => $last->created_at,
+                'last_inbound_at' => $conversation->messages()->where('direction', MessageDirection::Inbound)->latest('id')->value('created_at'),
+                'first_response_at' => $conversation->messages()->where('direction', MessageDirection::Outbound)->oldest('id')->value('created_at'),
+                'closed_at' => $at,
+                'closed_by' => $member->id,
+            ])->save();
+            $contact->forceFill(['last_message_at' => $last->created_at])->save();
+        }
+
+        mt_srand();
     }
 
     private function seedKnowledge(User $supervisor): void

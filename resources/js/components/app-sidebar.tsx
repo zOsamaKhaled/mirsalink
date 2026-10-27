@@ -29,6 +29,7 @@ import { index as broadcasts } from '@/routes/broadcasts';
 import { index as contacts } from '@/routes/contacts';
 import { index as inbox } from '@/routes/inbox';
 import { index as knowledge } from '@/routes/knowledge';
+import { index as reports } from '@/routes/reports';
 import { index as routing } from '@/routes/routing';
 import { index as teamMembers } from '@/routes/team/members';
 import { index as templates } from '@/routes/templates';
@@ -81,7 +82,16 @@ export function AppSidebar() {
             icon: BookOpenText,
             section: '/knowledge',
         },
-        { title: t('nav.reports'), href: '#', icon: BarChart3, soon: true },
+        ...(auth.can.manageTeam
+            ? [
+                  {
+                      title: t('nav.reports'),
+                      href: reports(),
+                      icon: BarChart3,
+                      section: '/reports',
+                  },
+              ]
+            : []),
     ];
 
     // Supervisors only: agents never see the management section.

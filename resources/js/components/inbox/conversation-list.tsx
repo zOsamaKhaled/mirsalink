@@ -19,9 +19,18 @@ import { formatListTime } from '@/lib/time';
 import { cn } from '@/lib/utils';
 import { index, show } from '@/routes/inbox';
 import { index as simulatorPage } from '@/routes/simulator';
-import type { ConversationSummary, InboxTab, InboxTag } from '@/types/inbox';
+import type {
+    ConversationSummary,
+    InboxMember,
+    InboxTab,
+    InboxTag,
+} from '@/types/inbox';
 
-export type InboxFilters = { q: string; tag: number | null };
+export type InboxFilters = {
+    q: string;
+    tag: number | null;
+    member: number | null;
+};
 
 /** Query string for a tab and filters, without empty values. */
 export function inboxQuery(
@@ -32,6 +41,7 @@ export function inboxQuery(
         ...(tab !== 'mine' ? { tab } : {}),
         ...(filters.q !== '' ? { q: filters.q } : {}),
         ...(filters.tag !== null ? { tag: filters.tag } : {}),
+        ...(filters.member !== null ? { member: filters.member } : {}),
     };
 }
 
@@ -44,6 +54,7 @@ export function ConversationList({
     selectedId,
     tags,
     longWaitMinutes,
+    members,
     simulator,
     notifications,
     className,
@@ -56,6 +67,7 @@ export function ConversationList({
     selectedId: number | null;
     tags: InboxTag[];
     longWaitMinutes: number;
+    members?: InboxMember[];
     simulator: boolean;
     notifications: {
         permission: NotificationPermission | 'unsupported';
@@ -65,7 +77,8 @@ export function ConversationList({
 }) {
     const { t, locale } = useTranslations();
     const getInitials = useInitials();
-    const filtered = filters.q !== '' || filters.tag !== null;
+    const filtered =
+        filters.q !== '' || filters.tag !== null || filters.member !== null;
 
     const visit = (nextTab: InboxTab, nextFilters: InboxFilters) =>
         router.get(
@@ -189,6 +202,7 @@ export function ConversationList({
                 <ListFilters
                     filters={filters}
                     tags={tags}
+                    members={members}
                     onChange={(next) => visit(tab, next)}
                 />
             </div>
@@ -284,10 +298,13 @@ export function ConversationList({
 function ListFilters({
     filters,
     tags,
+    members,
     onChange,
 }: {
     filters: InboxFilters;
     tags: InboxTag[];
+    /** Given to supervisors, who can look at one member's conversations. */
+    members?: InboxMember[];
     onChange: (filters: InboxFilters) => void;
 }) {
     const { t } = useTranslations();
@@ -309,8 +326,13 @@ function ListFilters({
     }, [q]);
 
     return (
-        <div className="flex gap-2">
-            <div className="relative min-w-0 flex-1">
+        <div className="flex flex-wrap gap-2">
+            <div
+                className={cn(
+                    'relative min-w-0 flex-1',
+                    members && 'basis-full',
+                )}
+            >
                 <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                     type="search"
@@ -333,7 +355,10 @@ function ListFilters({
                     }
                 >
                     <SelectTrigger
-                        className="h-9 w-32 shrink-0"
+                        className={cn(
+                            'h-9 shrink-0',
+                            members ? 'min-w-0 flex-1' : 'w-32',
+                        )}
                         aria-label={t('inbox.all_tags')}
                     >
                         <SelectValue />
@@ -345,6 +370,40 @@ function ListFilters({
                         {tags.map((tag) => (
                             <SelectItem key={tag.id} value={String(tag.id)}>
                                 {tag.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            )}
+            {members && (
+                <Select
+                    value={
+                        filters.member === null ? 'all' : String(filters.member)
+                    }
+                    onValueChange={(value) =>
+                        onChange({
+                            ...filters,
+                            q,
+                            member: value === 'all' ? null : Number(value),
+                        })
+                    }
+                >
+                    <SelectTrigger
+                        className="h-9 min-w-0 flex-1"
+                        aria-label={t('inbox.all_members')}
+                    >
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">
+                            {t('inbox.all_members')}
+                        </SelectItem>
+                        {members.map((member) => (
+                            <SelectItem
+                                key={member.id}
+                                value={String(member.id)}
+                            >
+                                {member.name}
                             </SelectItem>
                         ))}
                     </SelectContent>
