@@ -8,10 +8,13 @@ use App\Actions\Inbox\CloseConversation;
 use App\Actions\Inbox\SendMessage;
 use App\Actions\Inbox\SendTemplate;
 use App\Actions\Inbox\TagConversation;
+use App\Assistant\AssistantSettings;
+use App\Enums\ConversationEventType;
 use App\Exceptions\InboxRuleException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inbox\SendMessageRequest;
 use App\Models\Conversation;
+use App\Models\ConversationEvent;
 use App\Models\Message;
 use App\Models\Tag;
 use App\Models\Template;
@@ -69,6 +72,25 @@ class ConversationController extends Controller
                 'button' => $validated['button'] ?? null,
             ],
         ));
+    }
+
+    /**
+     * Gives the conversation back to the assistant, or takes it from it.
+     * Only while the assistant is answering customers at all.
+     */
+    public function assistant(Request $request, Conversation $conversation): RedirectResponse
+    {
+        $this->authorizeVisible($request, $conversation);
+        abort_unless(AssistantSettings::current()->isLive(), 409);
+
+        $active = $request->validate(['active' => ['required', 'boolean']])['active'];
+
+        if ($conversation->bot_active !== (bool) $active) {
+            $conversation->forceFill(['bot_active' => (bool) $active])->save();
+            ConversationEvent::record($conversation, ConversationEventType::AssistantToggled, $request->user(), ['active' => (bool) $active]);
+        }
+
+        return back();
     }
 
     public function assign(Request $request, Conversation $conversation, AssignConversation $assign): RedirectResponse

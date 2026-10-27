@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\Templates\QuickReplyController;
 use App\Http\Controllers\Templates\TemplateController;
@@ -26,5 +27,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('knowledge/{entry}', [KnowledgeController::class, 'update'])->name('knowledge.update');
         Route::post('knowledge/{entry}/review', [KnowledgeController::class, 'review'])->name('knowledge.review');
         Route::delete('knowledge/{entry}', [KnowledgeController::class, 'destroy'])->name('knowledge.destroy');
+
+        Route::get('assistant', [AssistantController::class, 'index'])->name('assistant.index');
+        Route::put('assistant', [AssistantController::class, 'update'])->name('assistant.update');
+        Route::post('assistant/trial', [AssistantController::class, 'trial'])
+            ->middleware('throttle:30,1')
+            ->name('assistant.trial');
     });
 });

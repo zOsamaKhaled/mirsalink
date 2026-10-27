@@ -29,6 +29,12 @@ enum ConversationEventType: string
     /** The out-of-hours reply went out. */
     case AutoReplied = 'auto_replied';
 
+    /** The assistant read the message and tagged it. data: tags, confidence */
+    case Classified = 'classified';
+
+    /** A member turned the assistant on or off for the conversation. data: active */
+    case AssistantToggled = 'assistant_toggled';
+
     /** The customer asked to stop broadcasts. */
     case OptedOut = 'opted_out';
 }

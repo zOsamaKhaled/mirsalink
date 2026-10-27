@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     BarChart3,
     BookOpenText,
+    Bot,
     Contact,
     FileText,
     Inbox,
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useTranslations } from '@/hooks/use-translations';
 import { dashboard } from '@/routes';
+import { index as assistantPage } from '@/routes/assistant';
 import { index as broadcasts } from '@/routes/broadcasts';
 import { index as contacts } from '@/routes/contacts';
 import { index as inbox } from '@/routes/inbox';
@@ -103,6 +105,12 @@ export function AppSidebar() {
             section: '/team',
         },
         { title: t('nav.routing'), href: routing(), icon: Tags },
+        {
+            title: t('nav.assistant'),
+            href: assistantPage(),
+            icon: Bot,
+            section: '/assistant',
+        },
     ];
 
     return (

@@ -6,7 +6,7 @@ import {
     usePage,
     usePoll,
 } from '@inertiajs/react';
-import { CircleCheck, Info, MessagesSquare } from 'lucide-react';
+import { Bot, CircleCheck, Info, MessagesSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { BackArrow } from '@/components/direction-icons';
@@ -30,6 +30,7 @@ import { formatPhone } from '@/lib/phone';
 import { formatHoursLeft } from '@/lib/time';
 import { cn } from '@/lib/utils';
 import { close, index, reopen } from '@/routes/inbox';
+import { update as assistant } from '@/routes/inbox/assistant';
 import type {
     ConversationSummary,
     IncomingMessage,
@@ -55,6 +56,7 @@ type Props = {
     quickReplies: QuickReply[];
     templates: WhatsAppTemplate[];
     pollSeconds: number;
+    assistantLive: boolean;
     longWaitMinutes: number;
     simulator: boolean;
 };
@@ -130,6 +132,7 @@ export default function Inbox(props: Props) {
                                 backHref={index.url({
                                     query: inboxQuery(tab, filters),
                                 })}
+                                assistantLive={props.assistantLive}
                                 onToggleDetails={() => setDetails(!details)}
                                 detailsOpen={details}
                             />
@@ -178,12 +181,14 @@ function ThreadHeader({
     conversation,
     members,
     backHref,
+    assistantLive,
     onToggleDetails,
     detailsOpen,
 }: {
     conversation: SelectedConversation;
     members: InboxMember[];
     backHref: string;
+    assistantLive: boolean;
     onToggleDetails: () => void;
     detailsOpen: boolean;
 }) {
@@ -224,6 +229,31 @@ function ThreadHeader({
 
             <div className="flex flex-wrap items-center gap-2">
                 <ReplyWindow conversation={conversation} />
+                {assistantLive && !conversation.closed && (
+                    <Button
+                        size="sm"
+                        variant={
+                            conversation.bot_active ? 'secondary' : 'ghost'
+                        }
+                        onClick={() =>
+                            router.put(
+                                assistant.url(conversation.id),
+                                { active: !conversation.bot_active },
+                                options,
+                            )
+                        }
+                        title={
+                            conversation.bot_active
+                                ? t('assistant.thread.handling')
+                                : undefined
+                        }
+                    >
+                        <Bot />
+                        {conversation.bot_active
+                            ? t('assistant.thread.off')
+                            : t('assistant.thread.on')}
+                    </Button>
+                )}
                 <AssignMenu conversation={conversation} members={members} />
                 {conversation.closed ? (
                     <Button

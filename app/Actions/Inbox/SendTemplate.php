@@ -86,6 +86,7 @@ class SendTemplate
             'unread_count' => 0,
             'awaiting_reply_since' => null,
             'first_response_at' => $conversation->first_response_at ?? now(),
+            'bot_active' => false,
         ])->save();
 
         if ($conversation->assigned_to === null) {

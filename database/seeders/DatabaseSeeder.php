@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Assistant\RunAssistant;
 use App\Actions\Broadcasts\PrepareRecipients;
 use App\Actions\Broadcasts\SendBroadcastBatch;
 use App\Actions\Inbox\UpdateMessageStatus;
+use App\Assistant\AssistantSettings;
 use App\Enums\AudienceType;
 use App\Enums\Availability;
 use App\Enums\BroadcastStatus;
@@ -24,6 +26,7 @@ use App\Models\Contact;
 use App\Models\Conversation;
 use App\Models\ConversationEvent;
 use App\Models\KnowledgeEntry;
+use App\Models\Message;
 use App\Models\QuickReply;
 use App\Models\RoutingRule;
 use App\Models\Tag;
@@ -84,6 +87,27 @@ class DatabaseSeeder extends Seeder
         $this->seedRepliesAndTemplates($supervisor);
         $this->seedKnowledge($supervisor);
         $this->seedBroadcasts($supervisor);
+        $this->seedAssistant();
+    }
+
+    /**
+     * The assistant left silent, having read the first message of a dozen
+     * past conversations, so its page shows suggestions beside the team's
+     * tags. Answering customers stays a supervisor's choice.
+     */
+    private function seedAssistant(): void
+    {
+        $defaults = AssistantSettings::defaults();
+        (new AssistantSettings(AssistantSettings::SHADOW, $defaults->greeting, $defaults->outOfScopeReply, $defaults->handoverReply))->save();
+
+        Message::query()
+            ->where('direction', MessageDirection::Inbound)
+            ->whereIn('conversation_id', Conversation::query()->where('status', ConversationStatus::Closed)->select('id'))
+            ->orderBy('id')
+            ->get()
+            ->unique('conversation_id')
+            ->take(12)
+            ->each(fn (Message $message) => app(RunAssistant::class)->handle($message));
     }
 
     /**

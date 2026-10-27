@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Assistant\Brain;
+use App\Assistant\SimulatedBrain;
 use App\Models\User;
 use App\WhatsApp\Gateway;
 use App\WhatsApp\SimulatorGateway;
@@ -20,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // The simulator now, Meta's Cloud API from phase 9; see config/whatsapp.php.
+        $this->app->bind(Brain::class, fn ($app) => $app->make(
+            config('assistant.drivers.'.config('assistant.driver'), SimulatedBrain::class),
+        ));
+
         $this->app->bind(Gateway::class, fn ($app) => $app->make(
             config('whatsapp.gateways.'.config('whatsapp.gateway'), SimulatorGateway::class),
         ));

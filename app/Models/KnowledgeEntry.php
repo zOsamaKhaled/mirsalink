@@ -20,6 +20,8 @@ use Illuminate\Support\Carbon;
  * @property string $answer
  * @property string|null $source
  * @property bool $active
+ * @property list<float>|null $embedding
+ * @property string|null $embedding_model
  * @property Carbon|null $reviewed_at
  * @property int|null $reviewed_by
  * @property int|null $created_by
@@ -42,6 +44,7 @@ class KnowledgeEntry extends Model
         return [
             'active' => 'boolean',
             'reviewed_at' => 'datetime',
+            'embedding' => 'array',
         ];
     }
 

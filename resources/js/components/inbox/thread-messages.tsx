@@ -1,5 +1,6 @@
 import {
     ArrowLeftRight,
+    Bot,
     CircleCheck,
     FileText,
     MapPin,
@@ -27,6 +28,8 @@ const EVENT_ICONS: Record<string, ReactNode> = {
     closed: <CircleCheck className="size-3.5" />,
     reopened: <RotateCcw className="size-3.5" />,
     auto_replied: <MoonStar className="size-3.5" />,
+    classified: <Bot className="size-3.5" />,
+    assistant_toggled: <Bot className="size-3.5" />,
 };
 
 /**

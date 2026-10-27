@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Assistant\EmbedKnowledgeEntry;
 use App\Models\KnowledgeEntry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,6 +64,8 @@ class KnowledgeController extends Controller
             'reviewed_by' => $request->user()->id,
         ])->save();
 
+        $this->embedLater($entry);
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('app.knowledge.flash.saved')]);
 
         return back();
@@ -77,6 +80,10 @@ class KnowledgeController extends Controller
             'reviewed_at' => now(),
             'reviewed_by' => $request->user()->id,
         ])->save();
+
+        if ($entry->wasChanged(['question', 'answer'])) {
+            $this->embedLater($entry);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('app.knowledge.flash.saved')]);
 
@@ -99,6 +106,14 @@ class KnowledgeController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('app.knowledge.flash.deleted')]);
 
         return back();
+    }
+
+    /**
+     * After the response: a slow or absent model never holds up the page.
+     */
+    private function embedLater(KnowledgeEntry $entry): void
+    {
+        dispatch(fn () => app(EmbedKnowledgeEntry::class)->handle($entry))->afterResponse();
     }
 
     /**

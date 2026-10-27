@@ -15,6 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('inbox/{conversation}/template', [ConversationController::class, 'template'])
         ->middleware('throttle:60,1')
         ->name('inbox.template.store');
+    Route::put('inbox/{conversation}/assistant', [ConversationController::class, 'assistant'])->name('inbox.assistant.update');
     Route::put('inbox/{conversation}/assignee', [ConversationController::class, 'assign'])->name('inbox.assignee.update');
     Route::post('inbox/{conversation}/tags', [ConversationController::class, 'tag'])->name('inbox.tags.store');
     Route::delete('inbox/{conversation}/tags/{tag}', [ConversationController::class, 'untag'])->name('inbox.tags.destroy');

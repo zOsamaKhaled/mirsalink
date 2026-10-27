@@ -41,6 +41,7 @@ class InboxPresenter
             'preview_from_team' => $latest !== null && $latest->direction === MessageDirection::Outbound && ! $latest->isNote(),
             'last_message_at' => $conversation->last_message_at?->toIso8601String(),
             'unread' => $conversation->unread_count,
+            'bot_active' => $conversation->bot_active,
             'closed' => ! $conversation->isOpen(),
             'waiting_since' => $conversation->awaiting_reply_since?->toIso8601String(),
             'waiting_long' => self::isWaitingLong($conversation),
@@ -192,9 +193,18 @@ class InboxPresenter
             ConversationEventType::Reopened => $actor === null
                 ? __('app.inbox.events.reopened_by_customer')
                 : __('app.inbox.events.reopened', ['actor' => $actor]),
-            ConversationEventType::HandedOver => __('app.inbox.events.handed_over', ['to' => $name('to')]),
+            ConversationEventType::HandedOver => isset($data['to'])
+                ? __('app.inbox.events.handed_over', ['to' => $name('to')])
+                : __('app.inbox.events.handed_over_waiting'),
             ConversationEventType::AutoReplied => __('app.inbox.events.auto_replied'),
             ConversationEventType::OptedOut => __('app.inbox.events.opted_out'),
+            ConversationEventType::Classified => __('app.inbox.events.classified', [
+                'tags' => implode('، ', (array) ($data['tags'] ?? [])) ?: '—',
+                'confidence' => number_format((float) ($data['confidence'] ?? 0) * 100).'%',
+            ]),
+            ConversationEventType::AssistantToggled => __(($data['active'] ?? false) ? 'app.inbox.events.assistant_on' : 'app.inbox.events.assistant_off', [
+                'actor' => $actor ?? __('app.inbox.events.someone'),
+            ]),
         };
     }
 

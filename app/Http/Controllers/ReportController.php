@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Assistant\AssistantReport;
 use App\Support\TeamReport;
 use App\Support\WorkingHours;
 use Carbon\CarbonImmutable;
@@ -32,6 +33,10 @@ class ReportController extends Controller
             'hours' => $report->hours(),
             'days' => $report->days(),
             'campaigns' => $report->campaigns(),
+            'assistant' => [
+                'live' => AssistantReport::summary('live', $report->from, $report->until),
+                'shadow' => AssistantReport::summary('shadow', $report->from, $report->until),
+            ],
             'targetMinutes' => (int) config('inbox.long_wait_minutes'),
         ]);
     }

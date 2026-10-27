@@ -3,10 +3,12 @@
 namespace App\Actions\Inbox;
 
 use App\Actions\Broadcasts\NoteCustomerReply;
+use App\Assistant\AssistantSettings;
 use App\Enums\ConversationEventType;
 use App\Enums\ConversationStatus;
 use App\Enums\MessageDirection;
 use App\Enums\MessageSender;
+use App\Jobs\RunAssistantJob;
 use App\Models\Contact;
 use App\Models\Conversation;
 use App\Models\ConversationEvent;
@@ -48,7 +50,9 @@ class ReceiveMessage
         $phone = PhoneNumber::normalize($inbound->phone)
             ?? throw new InvalidArgumentException("Unreadable phone number: {$inbound->phone}");
 
-        [$conversation, $message, $needsRouting] = DB::transaction(function () use ($inbound, $phone): array {
+        $settings = AssistantSettings::current();
+
+        [$conversation, $message, $needsRouting] = DB::transaction(function () use ($inbound, $phone, $settings): array {
             $contact = $this->contact($phone, $inbound->profileName);
             $conversation = Conversation::query()->firstOrNew(['contact_id' => $contact->id]);
             $isNew = ! $conversation->exists;
@@ -63,6 +67,12 @@ class ReceiveMessage
             ]);
             $conversation->unread_count = ($conversation->unread_count ?? 0) + 1;
             $conversation->awaiting_reply_since ??= now();
+
+            // Each time it opens, the assistant (when answering) has the first word.
+            if ($isNew || $wasClosed) {
+                $conversation->bot_active = $settings->isLive();
+            }
+
             $conversation->save();
 
             if ($wasClosed) {
@@ -88,11 +98,19 @@ class ReceiveMessage
 
         $this->noteReply->handle($conversation, $message);
 
-        if ($needsRouting) {
-            $this->assignOnArrival($conversation);
+        // While the assistant has the conversation, it routes on handover,
+        // by the tags it gives, and the out-of-hours reply waits for that.
+        if (! $conversation->bot_active) {
+            if ($needsRouting) {
+                $this->assignOnArrival($conversation);
+            }
+
+            $this->autoReply->handle($conversation->fresh());
         }
 
-        $this->autoReply->handle($conversation->fresh());
+        if (! $settings->isOff()) {
+            RunAssistantJob::dispatchAfterResponse($message->id);
+        }
 
         return $message;
     }

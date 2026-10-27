@@ -59,6 +59,17 @@ type Props = {
         stats: BroadcastStats;
     }[];
     targetMinutes: number;
+    assistant: Record<'live' | 'shadow', AssistantSummary>;
+};
+
+type AssistantSummary = {
+    turns: number;
+    settled: number | null;
+    handed_over: number | null;
+    failed: number;
+    agreement: number | null;
+    judged: number;
+    median_ms: number | null;
 };
 
 const number = (value: number) => value.toLocaleString('en');
@@ -194,17 +205,7 @@ export default function Reports(props: Props) {
                     <CampaignsTable campaigns={props.campaigns} />
                 </Panel>
 
-                <section className="flex items-start gap-3 rounded-2xl border border-dashed p-5">
-                    <Bot className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-                    <div className="flex flex-col gap-1">
-                        <h2 className="font-bold">
-                            {t('reports.assistant.title')}
-                        </h2>
-                        <p className="text-body-sm text-muted-foreground">
-                            {t('reports.assistant.body')}
-                        </p>
-                    </div>
-                </section>
+                <AssistantPanel assistant={props.assistant} />
             </div>
         </>
     );
@@ -722,5 +723,78 @@ function CampaignsTable({ campaigns }: { campaigns: Props['campaigns'] }) {
                 </tbody>
             </table>
         </div>
+    );
+}
+
+/** The assistant's turns in the period, answering and silent apart. */
+function AssistantPanel({ assistant }: { assistant: Props['assistant'] }) {
+    const { t } = useTranslations();
+    const modes = (['live', 'shadow'] as const).filter(
+        (mode) => assistant[mode].turns > 0,
+    );
+    const percent = (value: number | null) =>
+        value === null ? '—' : `${value}%`;
+
+    return (
+        <section className="flex flex-col gap-4 rounded-2xl border bg-card p-5">
+            <h2 className="flex items-center gap-2 text-title font-bold">
+                <Bot className="size-5 text-muted-foreground" />
+                {t('reports.assistant.title')}
+            </h2>
+            {modes.length === 0 ? (
+                <p className="text-body-sm text-muted-foreground">
+                    {t('reports.assistant.body')}
+                </p>
+            ) : (
+                <div className="grid gap-4 lg:grid-cols-2">
+                    {modes.map((mode) => {
+                        const row = assistant[mode];
+
+                        return (
+                            <dl
+                                key={mode}
+                                className="grid grid-cols-2 gap-3 rounded-xl bg-sunken p-4 sm:grid-cols-4"
+                            >
+                                <dt className="col-span-full text-body-sm font-semibold">
+                                    {t(`reports.assistant.${mode}`)}
+                                </dt>
+                                {(
+                                    [
+                                        [
+                                            'assistant.summary.turns',
+                                            String(row.turns),
+                                        ],
+                                        [
+                                            'assistant.summary.settled',
+                                            percent(row.settled),
+                                        ],
+                                        [
+                                            'assistant.summary.handed_over',
+                                            percent(row.handed_over),
+                                        ],
+                                        [
+                                            'assistant.summary.agreement',
+                                            percent(row.agreement),
+                                        ],
+                                    ] as const
+                                ).map(([label, value]) => (
+                                    <div
+                                        key={label}
+                                        className="flex flex-col gap-1"
+                                    >
+                                        <dt className="text-caption text-muted-foreground">
+                                            {t(label)}
+                                        </dt>
+                                        <dd className="text-heading font-extrabold tabular">
+                                            {value}
+                                        </dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        );
+                    })}
+                </div>
+            )}
+        </section>
     );
 }

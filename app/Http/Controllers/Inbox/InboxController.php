@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Inbox;
 
+use App\Assistant\AssistantSettings;
 use App\Enums\ConversationStatus;
 use App\Enums\MessageDirection;
 use App\Enums\TemplateStatus;
@@ -123,6 +124,7 @@ class InboxController extends Controller
                 ->get()
                 ->map(fn (Template $template): array => TemplatePresenter::present($template)),
             'pollSeconds' => (int) config('inbox.poll_seconds'),
+            'assistantLive' => AssistantSettings::current()->isLive(),
             'longWaitMinutes' => (int) config('inbox.long_wait_minutes'),
             'simulator' => $user->can('manage-team') && app(Gateway::class) instanceof SimulatorGateway,
         ]);

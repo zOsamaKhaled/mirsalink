@@ -269,11 +269,19 @@ export function ConversationList({
                                                               .name,
                                                       ),
                                                   }
-                                                : undefined
+                                                : conversation.bot_active
+                                                  ? {
+                                                        kind: 'bot',
+                                                        label: t(
+                                                            'inbox.sender.bot',
+                                                        ),
+                                                    }
+                                                  : undefined
                                         }
                                         waitingForPerson={
                                             !conversation.closed &&
-                                            conversation.assignee === null
+                                            conversation.assignee === null &&
+                                            !conversation.bot_active
                                         }
                                         flag={
                                             conversation.waiting_long

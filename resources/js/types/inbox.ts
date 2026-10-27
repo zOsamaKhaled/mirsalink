@@ -25,6 +25,7 @@ export type ConversationSummary = {
     preview_from_team: boolean;
     last_message_at: string | null;
     unread: number;
+    bot_active: boolean;
     closed: boolean;
     waiting_since: string | null;
     waiting_long: boolean;
