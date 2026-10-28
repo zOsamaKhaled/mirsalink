@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CodeController;
 use App\Http\Controllers\MigrationController;
 use App\Http\Controllers\WhatsAppController;
 use Illuminate\Support\Facades\Route;
@@ -15,4 +16,11 @@ Route::middleware(['auth', 'verified', 'can:manage-team'])->group(function () {
     Route::put('migration', [MigrationController::class, 'update'])->name('migration.update');
     Route::put('migration/steps/{step}', [MigrationController::class, 'step'])->name('migration.steps.update');
     Route::post('migration/prices-checked', [MigrationController::class, 'pricesChecked'])->name('migration.prices');
+
+    // Rizq's verification codes. Rizq's own request comes in through routes/api.php.
+    Route::get('codes', [CodeController::class, 'index'])->name('codes.index');
+    Route::put('codes', [CodeController::class, 'update'])->name('codes.update');
+    Route::post('codes/templates', [CodeController::class, 'submitTemplates'])->name('codes.templates.submit');
+    Route::put('codes/templates/{language}', [CodeController::class, 'decide'])->name('codes.templates.decide');
+    Route::put('codes/deliveries/{delivery}/status', [CodeController::class, 'status'])->name('codes.deliveries.status');
 });

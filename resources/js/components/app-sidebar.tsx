@@ -6,6 +6,7 @@ import {
     Contact,
     FileText,
     Inbox,
+    KeyRound,
     LayoutGrid,
     ListChecks,
     Megaphone,
@@ -31,6 +32,7 @@ import { dashboard } from '@/routes';
 import { index as migration } from '@/routes/migration';
 import { index as assistantPage } from '@/routes/assistant';
 import { index as broadcasts } from '@/routes/broadcasts';
+import { index as codes } from '@/routes/codes';
 import { index as contacts } from '@/routes/contacts';
 import { index as inbox } from '@/routes/inbox';
 import { index as knowledge } from '@/routes/knowledge';
@@ -114,6 +116,12 @@ export function AppSidebar() {
             href: whatsapp(),
             icon: MessageCircle,
             section: '/whatsapp',
+        },
+        {
+            title: t('nav.codes'),
+            href: codes(),
+            icon: KeyRound,
+            section: '/codes',
         },
         {
             title: t('nav.migration'),

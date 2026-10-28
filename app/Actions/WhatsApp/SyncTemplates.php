@@ -3,6 +3,7 @@
 namespace App\Actions\WhatsApp;
 
 use App\Actions\Templates\RecordTemplateDecision;
+use App\Codes\CodeSettings;
 use App\Enums\TemplateStatus;
 use App\Models\Template;
 use App\WhatsApp\CloudApi;
@@ -39,6 +40,12 @@ class SyncTemplates
             $template = Template::query()->where('external_id', (string) ($item['id'] ?? ''))->first()
                 ?? Template::query()->where('name', $item['name'] ?? '')->where('language', $item['language'] ?? '')->first();
 
+            if ($status !== null && $template === null && ($item['name'] ?? null) === CodeSettings::templateName()) {
+                $changed += $this->syncCodeTemplate((string) ($item['language'] ?? ''), $status, $item['rejected_reason'] ?? null);
+
+                continue;
+            }
+
             if ($status === null || $template === null) {
                 continue;
             }
@@ -55,5 +62,21 @@ class SyncTemplates
         }
 
         return $changed;
+    }
+
+    /**
+     * The verification-code template, kept apart from the team's.
+     *
+     * @return int 1 if it changed.
+     */
+    private function syncCodeTemplate(string $language, TemplateStatus $status, ?string $reason): int
+    {
+        if (CodeSettings::current()->status($language) === $status) {
+            return 0;
+        }
+
+        CodeSettings::recordDecision($language, $status, $reason === 'NONE' ? null : $reason);
+
+        return 1;
     }
 }

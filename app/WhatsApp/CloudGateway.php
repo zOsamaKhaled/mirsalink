@@ -2,6 +2,7 @@
 
 namespace App\WhatsApp;
 
+use App\Codes\CodeSettings;
 use App\Enums\MessageType;
 use App\Models\Message;
 use App\Models\Template;
@@ -46,6 +47,57 @@ class CloudGateway implements Gateway
 
         try {
             $response = $this->api->post("{$this->api->businessAccountId()}/message_templates", TemplatePayload::forReview($template));
+        } catch (CloudApiException $exception) {
+            return SendResult::refused($exception->metaCode, $exception->forPeople());
+        }
+
+        return SendResult::accepted((string) ($response['id'] ?? ''));
+    }
+
+    public function sendCode(string $phone, string $code, string $language): SendResult
+    {
+        $text = [['type' => 'text', 'text' => $code]];
+
+        try {
+            $response = $this->api->post("{$this->api->phoneNumberId()}/messages", [
+                'messaging_product' => 'whatsapp',
+                'recipient_type' => 'individual',
+                'to' => ltrim($phone, '+'),
+                'type' => 'template',
+                'template' => [
+                    'name' => CodeSettings::templateName(),
+                    'language' => ['code' => $language],
+                    // The code twice: in the text, and behind the copy button.
+                    'components' => [
+                        ['type' => 'body', 'parameters' => $text],
+                        ['type' => 'button', 'sub_type' => 'url', 'index' => '0', 'parameters' => $text],
+                    ],
+                ],
+            ]);
+        } catch (CloudApiException $exception) {
+            return SendResult::refused($exception->metaCode, $exception->forPeople());
+        }
+
+        $id = $response['messages'][0]['id'] ?? null;
+
+        return $id === null
+            ? SendResult::refused('no_message_id', __('app.whatsapp.errors.no_message_id'))
+            : SendResult::accepted((string) $id);
+    }
+
+    public function submitCodeTemplate(string $language): SendResult
+    {
+        try {
+            $response = $this->api->post("{$this->api->businessAccountId()}/message_templates", [
+                'name' => CodeSettings::templateName(),
+                'language' => $language,
+                'category' => 'AUTHENTICATION',
+                'components' => [
+                    ['type' => 'BODY', 'add_security_recommendation' => true],
+                    ['type' => 'FOOTER', 'code_expiration_minutes' => (int) config('rizq.codes.expiry_minutes')],
+                    ['type' => 'BUTTONS', 'buttons' => [['type' => 'OTP', 'otp_type' => 'COPY_CODE']]],
+                ],
+            ]);
         } catch (CloudApiException $exception) {
             return SendResult::refused($exception->metaCode, $exception->forPeople());
         }

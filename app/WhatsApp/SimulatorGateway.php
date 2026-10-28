@@ -28,4 +28,17 @@ class SimulatorGateway implements Gateway
     {
         return SendResult::accepted('tpl.sim.'.Str::uuid()->toString());
     }
+
+    /**
+     * Takes every code; the codes page marks it delivered or failed.
+     */
+    public function sendCode(string $phone, string $code, string $language): SendResult
+    {
+        return SendResult::accepted('wamid.sim.code.'.Str::uuid()->toString());
+    }
+
+    public function submitCodeTemplate(string $language): SendResult
+    {
+        return SendResult::accepted('tpl.sim.code.'.Str::uuid()->toString());
+    }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Actions\WhatsApp;
 
+use App\Actions\Codes\RecordCodeStatus;
 use App\Actions\Inbox\ReceiveMessage;
 use App\Actions\Inbox\UpdateMessageStatus;
 use App\Actions\Templates\RecordTemplateDecision;
+use App\Codes\CodeSettings;
 use App\Enums\MessageStatus;
 use App\Enums\TemplateStatus;
 use App\Models\Template;
@@ -28,6 +30,7 @@ class ProcessWebhookEvent
         private ReceiveMessage $receive,
         private UpdateMessageStatus $status,
         private RecordTemplateDecision $decision,
+        private RecordCodeStatus $codeStatus,
     ) {}
 
     public function handle(WebhookEvent $event): bool
@@ -94,7 +97,11 @@ class ProcessWebhookEvent
                 trim(($error['message'] ?? $error['title'] ?? '').(isset($error['error_data']['details']) ? " ({$error['error_data']['details']})" : '')),
             ))->forPeople();
 
-            $this->status->handle((string) $status['id'], $kind, $error === null ? null : (string) ($error['code'] ?? ''), $reason);
+            $errorCode = $error === null ? null : (string) ($error['code'] ?? '');
+
+            // Not a message the team sent: then perhaps a verification code.
+            $this->status->handle((string) $status['id'], $kind, $errorCode, $reason)
+                ?? $this->codeStatus->handle((string) $status['id'], $kind, $errorCode, $reason);
         }
     }
 
@@ -110,9 +117,13 @@ class ProcessWebhookEvent
                 ->where('language', (string) ($value['message_template_language'] ?? ''))
                 ->first();
 
+        $reason = $value['reason'] ?? null;
+        $reason = $reason === 'NONE' ? null : $reason;
+
         if ($status !== null && $template !== null) {
-            $reason = $value['reason'] ?? null;
-            $this->decision->handle($template, $status, $reason === 'NONE' ? null : $reason);
+            $this->decision->handle($template, $status, $reason);
+        } elseif ($status !== null && ($value['message_template_name'] ?? null) === CodeSettings::templateName()) {
+            CodeSettings::recordDecision((string) ($value['message_template_language'] ?? ''), $status, $reason);
         }
     }
 }

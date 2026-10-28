@@ -26,4 +26,17 @@ interface Gateway
      * (RecordTemplateDecision), not from here.
      */
     public function submitTemplate(Template $template): SendResult;
+
+    /**
+     * Sends a verification code with Meta's authentication template, in
+     * the given language. Like any message, its fate comes back later as
+     * status updates.
+     */
+    public function sendCode(string $phone, string $code, string $language): SendResult;
+
+    /**
+     * Hands Meta the authentication template for one language. Its wording
+     * is Meta's own; only the expiry and the copy button are ours.
+     */
+    public function submitCodeTemplate(string $language): SendResult;
 }
