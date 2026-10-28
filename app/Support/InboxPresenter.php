@@ -198,6 +198,7 @@ class InboxPresenter
                 : __('app.inbox.events.handed_over_waiting'),
             ConversationEventType::AutoReplied => __('app.inbox.events.auto_replied'),
             ConversationEventType::OptedOut => __('app.inbox.events.opted_out'),
+            ConversationEventType::SentToSales => __('app.inbox.events.sent_to_sales', ['actor' => $actor ?? __('app.inbox.events.someone')]),
             ConversationEventType::Classified => __('app.inbox.events.classified', [
                 'tags' => implode('، ', (array) ($data['tags'] ?? [])) ?: '—',
                 'confidence' => number_format((float) ($data['confidence'] ?? 0) * 100).'%',

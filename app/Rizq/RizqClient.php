@@ -4,6 +4,7 @@ namespace App\Rizq;
 
 use App\Support\SignedRequest;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -26,8 +27,30 @@ class RizqClient
      */
     public function post(string $path, array $payload): bool
     {
+        return $this->send($path, $payload)?->successful() ?? false;
+    }
+
+    /**
+     * Asks Rizq something and returns its answer, or null when Rizq is not
+     * linked, refused, or did not answer in time.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>|null
+     */
+    public function ask(string $path, array $payload): ?array
+    {
+        $response = $this->send($path, $payload);
+
+        return $response !== null && $response->successful() ? (array) $response->json() : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function send(string $path, array $payload): ?Response
+    {
         if (! $this->configured()) {
-            return false;
+            return null;
         }
 
         $url = rtrim((string) config('rizq.url'), '/').'/'.ltrim($path, '/');
@@ -38,12 +61,11 @@ class RizqClient
                 ->withBody($body, 'application/json')
                 ->acceptJson()
                 ->timeout((int) config('rizq.timeout_seconds'))
-                ->post($url)
-                ->successful();
+                ->post($url);
         } catch (ConnectionException $exception) {
             report($exception);
 
-            return false;
+            return null;
         }
     }
 }

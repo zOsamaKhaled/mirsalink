@@ -13,6 +13,7 @@ use App\Models\QuickReply;
 use App\Models\Tag;
 use App\Models\Template;
 use App\Models\User;
+use App\Rizq\ClientCard;
 use App\Support\InboxPresenter;
 use App\Support\TemplatePresenter;
 use App\WhatsApp\Gateway;
@@ -94,6 +95,10 @@ class InboxController extends Controller
                 'contact_tags' => InboxPresenter::tags($selected->contact->tags),
             ],
             'thread' => $selected === null ? [] : InboxPresenter::thread($selected),
+            // Asked of Rizq after the page shows, and left out of the poll.
+            'rizqCard' => $selected === null || $selected->contact->trashed()
+                ? null
+                : Inertia::defer(fn (): array => app(ClientCard::class)->forPhone((string) $selected->contact->phone)),
             'incoming' => $this->incoming($user),
             'members' => User::query()
                 ->active()

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Inbox;
 
 use App\Actions\Inbox\AddNote;
+use App\Actions\Inbox\AddRizqLead;
 use App\Actions\Inbox\AssignConversation;
 use App\Actions\Inbox\CloseConversation;
 use App\Actions\Inbox\SendMessage;
@@ -89,6 +90,35 @@ class ConversationController extends Controller
             $conversation->forceFill(['bot_active' => (bool) $active])->save();
             ConversationEvent::record($conversation, ConversationEventType::AssistantToggled, $request->user(), ['active' => (bool) $active]);
         }
+
+        return back();
+    }
+
+    /**
+     * Hands the customer to Rizq's sales team as a lead. Rizq says whether
+     * it added them or already had them, and whose they are.
+     */
+    public function rizqLead(Request $request, Conversation $conversation, AddRizqLead $addLead): RedirectResponse
+    {
+        $this->authorizeVisible($request, $conversation);
+
+        $validated = $request->validate([
+            'type' => ['required', 'in:company,individual'],
+            'name' => ['required', 'string', 'max:255'],
+            'note' => ['nullable', 'string', 'max:2000'],
+        ], [], [
+            'name' => __('app.inbox.rizq.lead.name'),
+            'note' => __('app.inbox.rizq.lead.note'),
+        ]);
+
+        $result = $addLead->handle($conversation, $request->user(), $validated['type'], $validated['name'], $validated['note'] ?? null);
+
+        Inertia::flash('toast', match (true) {
+            $result === null => ['type' => 'error', 'message' => __('app.inbox.rizq.flash.unreachable')],
+            $result['added'] => ['type' => 'success', 'message' => __('app.inbox.rizq.flash.added')],
+            $result['owner'] !== null => ['type' => 'info', 'message' => __('app.inbox.rizq.flash.already_owned', ['owner' => $result['owner']])],
+            default => ['type' => 'info', 'message' => __('app.inbox.rizq.flash.already_pooled')],
+        });
 
         return back();
     }

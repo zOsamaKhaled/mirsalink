@@ -3,6 +3,7 @@ import { BellOff, Plus, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { CategoryTag } from '@/components/inbox/category-tag';
+import { RizqCard } from '@/components/inbox/rizq-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -109,6 +110,8 @@ export function ContactPanel({
                     </p>
                 )}
             </dl>
+
+            {!contact.deleted && <RizqCard conversation={conversation} />}
 
             <section className="flex flex-col gap-2">
                 <h3 className="text-caption font-semibold text-muted-foreground">

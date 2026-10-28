@@ -37,4 +37,7 @@ enum ConversationEventType: string
 
     /** The customer asked to stop broadcasts. */
     case OptedOut = 'opted_out';
+
+    /** A member handed the customer to Rizq's sales team as a lead. */
+    case SentToSales = 'sent_to_sales';
 }

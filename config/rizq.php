@@ -21,6 +21,12 @@ return [
 
     'timeout_seconds' => 5,
 
+    // Rizq's side of the link: the customer's card, and handing them to sales.
+    'paths' => [
+        'card' => '/internal/mirsalink/card',
+        'leads' => '/internal/mirsalink/leads',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Verification codes

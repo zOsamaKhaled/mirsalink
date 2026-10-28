@@ -21,6 +21,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('inbox/{conversation}/tags/{tag}', [ConversationController::class, 'untag'])->name('inbox.tags.destroy');
     Route::post('inbox/{conversation}/close', [ConversationController::class, 'close'])->name('inbox.close');
     Route::post('inbox/{conversation}/reopen', [ConversationController::class, 'reopen'])->name('inbox.reopen');
+    Route::post('inbox/{conversation}/rizq-lead', [ConversationController::class, 'rizqLead'])
+        ->middleware('throttle:20,1')
+        ->name('inbox.rizq-lead.store');
     Route::get('media/{message}', [ConversationController::class, 'media'])->name('inbox.media');
 
     // Only while WhatsApp is simulated (the controller checks the gateway).

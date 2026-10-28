@@ -51,6 +51,33 @@ export type SelectedConversation = ConversationSummary & {
     first_response_at: string | null;
 };
 
+/** Who the customer is on Rizq, from the signed link (App\Rizq\ClientCard). */
+export type RizqCard =
+    | { state: 'not_linked' }
+    | { state: 'unavailable' }
+    | {
+          state: 'found';
+          account: {
+              type: 'worker' | 'individual_employer' | 'company_member';
+              name: string;
+              plan: {
+                  name: string;
+                  is_trial: boolean;
+                  ends_at: string | null;
+              } | null;
+              verification:
+                  | 'verified'
+                  | 'pending'
+                  | 'rejected'
+                  | 'not_submitted'
+                  | null;
+          } | null;
+          sales: {
+              status: 'lead' | 'prospect' | 'customer';
+              owner: string | null;
+          } | null;
+      };
+
 export type ThreadMessage = {
     kind: 'message';
     id: number;
